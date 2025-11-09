@@ -1,5 +1,8 @@
 import itertools
 import time
+import os
+from pathlib import Path
+from datetime import datetime
 
 
 formText ={
@@ -204,21 +207,31 @@ def print_results(premises, conclusions, termActivity, isValid):
         if len(termActivity['decoyTerms']) > config['maxDecoyTerms']:
             count += 1
             print(f"{count}: # Decoy Terms exceeded: {len(termActivity['decoyTerms'])} > {config['maxDecoyTerms']}")
-        if config['requireSingleConclusion'] and len(conclusions) != 1:
+        if not recipe['diagnostics']['singleConclusion']:
             count += 1
             print(f"{count}: Single conclusion required, found: {len(conclusions)}")
-        if not premises_have_model(truthTable, statementIndex, premises):
+        if not recipe['diagnostics']['hasModel']:
             count += 1
             print(f"{count}: Premises have no model (are contradictory).")
+        if recipe['diagnostics']['redundantPremise']:
+            count += 1
+            print(f"{count}: Premises contain redundant statements.")
+        if recipe['diagnostics']['onlyIsolatedI']:
+            count += 1
+            print(f"{count}: Only isolated I conclusions found.")
+        if recipe['diagnostics']['AEConflict']:
+            count += 1
+            print(f"{count}: AE polarity conflict on a term pair in premises.")
 
 
 def analyze_premises(truthTable, statementIndex, premises, statements, config):
     hasModel = premises_have_model(truthTable, statementIndex, premises)
     # Find all entailed AEIO statements
-    conclusions = find_conclusions(truthTable, statementIndex, premises, statements)
+    rawConclusions = find_conclusions(truthTable, statementIndex, premises, statements)
+    novelConclusions = normalize_conclusions_for_puzzle(premises, rawConclusions)
 
     # Compute term activity
-    termActivity = compute_term_activity(premises, conclusions)
+    termActivity = compute_term_activity(premises, novelConclusions)
     premiseTerms = termActivity['premiseTerms']
     conclusionTerms = termActivity['conclusionTerms']
     activeTerms = termActivity['activeTerms']
@@ -228,21 +241,45 @@ def analyze_premises(truthTable, statementIndex, premises, statements, config):
     tooManyPremises = len(premises) > config['maxPremises']
     tooManyDecoys = len(decoyTerms) > config['maxDecoyTerms']
 
+    singleConclusion = True
     if config['requireSingleConclusion']:
-        singleConclusion = (len(conclusions) == 1)
-    
-    isValidRecipe = hasModel and (not tooManyPremises) and (not tooManyDecoys) and singleConclusion
+        singleConclusion = (len(novelConclusions) == 1)
+ 
+    redundantPremise = has_redundant_premise(truthTable, statementIndex, premises, statements)
+    onlyIsolatedI = has_only_isolated_I_conclusions(premises, novelConclusions)
+    AEConflict = has_AE_polarity_conflict_on_pair(premises)
+
+    isValidRecipe = (
+        hasModel and 
+        (not tooManyPremises) and 
+        (not tooManyDecoys) and 
+        (not redundantPremise) and 
+        (not onlyIsolatedI) and
+        (not AEConflict) and
+        singleConclusion
+    )
+
+    diagnostics = {
+        'hasModel': hasModel,
+        'tooManyPremises': tooManyPremises,
+        'tooManyDecoys': tooManyDecoys,
+        'redundantPremise': redundantPremise,
+        'singleConclusion': singleConclusion,
+        'onlyIsolatedI': onlyIsolatedI,
+        'AEConflict': AEConflict
+    }
     
     recipe = {
         'premises': premises,
-        'conclusions': conclusions,
+        'conclusions': novelConclusions,
         'termActivity': {
             'premiseTerms': premiseTerms,
             'conclusionTerms': conclusionTerms,
             'activeTerms': activeTerms,
             'decoyTerms': decoyTerms
         },
-        'isValid': isValidRecipe
+        'isValid': isValidRecipe,
+        'diagnostics': diagnostics
     }
 
 
@@ -272,18 +309,97 @@ def canonical_statement(statement):
             return statement
     return statement
 
+def has_redundant_premise(truthTable, statementIndex, premises, statements):
+    if len(premises) <= 1:
+        return False
+    
+    fullKey = closure_key(truthTable, statementIndex, premises, statements)
+    for i, premise in enumerate(premises):
+        smallerPremises = [p for j, p in enumerate(premises) if j != i]
+        smallerKey = closure_key(truthTable, statementIndex, smallerPremises, statements)
+        if smallerKey == fullKey:
+            return True
+    return False
+
+def closure_key(truthTable, statementIndex, premises, statements):
+    conclusions = find_conclusions(truthTable, statementIndex, premises, statements)
+    canon = [canonical_statement(c) for c in conclusions]
+    return frozenset(canon)
+
+def is_isolated_pair(S, P, premises):
+    for form, subject, predicate in premises:
+        if {subject, predicate} != {S, P}:
+            return False
+        if form not in ('A', 'E'):
+            return False
+    return True
+
+def has_only_isolated_I_conclusions(premises, conclusions):
+    if not conclusions:
+        return False
+    for form, s, p in conclusions:
+        if form != 'I':
+            return False
+        if not is_isolated_pair(s, p, premises):
+            return False
+    return True
+
+def has_AE_polarity_conflict_on_pair(premises):
+    byPair = {}
+
+    for form, subject, predicate in premises:
+        key = (min(subject, predicate), max(subject, predicate))
+        forms = byPair.setdefault(key, set())
+        if form in ('A', 'E'):
+            forms.add(form)
+    
+    for forms in byPair.values():
+        if 'A' in forms and 'E' in forms:
+            return True
+    return False
+
+def premise_pairs(premises):
+    pairs = set()
+    for form, subject, predicate in premises:
+        pairs.add(frozenset({subject, predicate}))
+    return pairs
+
+def filter_novel_conclusions(premises, conclusions):
+    premisePairs = premise_pairs(premises)
+    novelConclusions = []
+    for form, subject, predicate in conclusions:
+        pair = frozenset({subject, predicate})
+        if pair in premisePairs:
+            continue
+        novelConclusions.append((form, subject, predicate))
+    return novelConclusions
+
+def normalize_conclusions_for_puzzle(premises, conclusions):
+    novel = filter_novel_conclusions(premises, conclusions)
+
+    seen = set()
+    result = []
+    for statement in novel:
+        canon = canonical_statement(statement)
+        if canon in seen:
+            continue
+        seen.add(canon)
+        result.append(statement)
+    return result
 
 ## Main Execution
 config = {
-    "maxPremises": 2,
-    "maxDecoyTerms": 1,
-    "requireSingleConclusion": True,
-    "maxPremiseTerms": 4
+    "minPremises": 3,
+    "maxPremises": 4,
+    "maxDecoyTerms": 2,
+    "requireSingleConclusion": False,
+    "maxPremiseTerms": 6,
+    "requireAllTermsInPremises": True
 }
 
 # Precomputing which statements are true in which models for optimization
 # Instead of having the entails function generate and compare models repeatedly
-termcount = 2  # Number of terms (A, B, C, D)
+termcount = 3  # Number of terms (A, B, C, D)
 
 primitivePatterns = generate_primitive_patterns(termcount)
 termNames = {i: chr(ord('A') + i) for i in range(termcount)}  # Map 0->A, 1->B, etc.
@@ -341,8 +457,16 @@ if (generateAllRecipes):
     for premises in premiseSets:
         #print(f"Analyzing Premises Set #{premiseCount + 1} of {sizePremiseSets} premises...")
         # Skip premise sets that exceed max premise terms
-        if len(collect_terms(premises)) > config['maxPremiseTerms']:
+        
+        if len(premises) < config['minPremises']:
             continue
+        premiseTerms = collect_terms(premises)
+        if len(premiseTerms) > config['maxPremiseTerms']:
+            continue
+
+        if config['requireAllTermsInPremises']:
+            if len(premiseTerms) < termcount:
+                continue
 
         recipe = analyze_premises(truthTable, statementIndex, premises, allStatements, config)
         if not recipe['isValid']:
@@ -380,3 +504,62 @@ for i, recipe in enumerate(uniqueRecipes[:5]):
     print(f"Recipe #{i+1}:")
     print_results(recipe['premises'], recipe['conclusions'], recipe['termActivity'], recipe['isValid'])
     print("-"*30)
+
+def _make_output_path(base_dir, termcount, cfg):
+    base_name = (
+        f"recipes_terms{termcount}_min{cfg['minPremises']}_max{cfg['maxPremises']}"
+        f"_decoy{cfg['maxDecoyTerms']}_premiseterms{cfg['maxPremiseTerms']}"
+        f"_single{int(cfg['requireSingleConclusion'])}"
+    )
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    candidate = Path(base_dir) / f"{base_name}_{timestamp}.txt"
+    i = 1
+    while candidate.exists():
+        candidate = Path(base_dir) / f"{base_name}_{timestamp}_{i}.txt"
+        i += 1
+    return candidate
+
+def _write_recipe_file(path, recipes, cfg, termcount):
+    with path.open("w", encoding="utf-8") as f:
+        f.write(f"Recipes export\nGenerated: {datetime.now().isoformat()}\n")
+        f.write(f"Term count: {termcount}\n")
+        f.write("Config:\n")
+        for k, v in cfg.items():
+            f.write(f"  {k}: {v}\n")
+        f.write("\nTotal unique recipes: %d\n\n" % len(recipes))
+
+        for idx, recipe in enumerate(recipes, start=1):
+            f.write(f"Recipe #{idx}\n")
+            f.write("- Premises:\n")
+            for p in recipe['premises']:
+                f.write("   - " + statement_to_string(p) + "\n")
+            f.write("- Conclusions:\n")
+            if recipe['conclusions']:
+                for c in recipe['conclusions']:
+                    f.write("   - " + statement_to_string(c) + "\n")
+            else:
+                f.write("   (none)\n")
+
+            ta = recipe.get('termActivity', {})
+            f.write("- Term Activity:\n")
+            f.write(f"   premiseTerms ({len(ta.get('premiseTerms',[]))}): "
+                    f"{[termNames[t] for t in sorted(ta.get('premiseTerms',[]))]}\n")
+            f.write(f"   conclusionTerms ({len(ta.get('conclusionTerms',[]))}): "
+                    f"{[termNames[t] for t in sorted(ta.get('conclusionTerms',[]))]}\n")
+            f.write(f"   activeTerms ({len(ta.get('activeTerms',[]))}): "
+                    f"{[termNames[t] for t in sorted(ta.get('activeTerms',[]))]}\n")
+            f.write(f"   decoyTerms ({len(ta.get('decoyTerms',[]))}): "
+                    f"{[termNames[t] for t in sorted(ta.get('decoyTerms',[]))]}\n")
+
+            f.write(f"- Valid: {recipe.get('isValid', False)}\n")
+            f.write("- Diagnostics:\n")
+            for k, v in recipe.get('diagnostics', {}).items():
+                f.write(f"   {k}: {v}\n")
+
+            f.write("\n" + ("=" * 60) + "\n\n")
+
+    # Save uniqueRecipes to a file in the same directory as this script.
+output_dir = Path(__file__).parent
+out_path = _make_output_path(output_dir, termcount, config)
+_write_recipe_file(out_path, uniqueRecipes, config, termcount)
+print(f"Saved {len(uniqueRecipes)} unique recipes to: {out_path}")
