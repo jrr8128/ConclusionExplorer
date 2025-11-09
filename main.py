@@ -333,7 +333,7 @@ generateAllRecipes = True
 if (generateAllRecipes):
     validRecipes = []
     premiseSets = generate_premise_sets(allStatements, config['maxPremises'])
-    recipeCount = 0
+    validRecipeCount = 0
     sizePremiseSets = len(premiseSets)
     seenKeys = set()
     uniqueRecipes = []
@@ -347,14 +347,13 @@ if (generateAllRecipes):
         recipe = analyze_premises(truthTable, statementIndex, premises, allStatements, config)
         if not recipe['isValid']:
             continue
-        recipeCount += 1
+        validRecipeCount += 1
 
-        normPremises = [canonical_statement(p) for p in recipe['premises']]
         normConclusions = [canonical_statement(c) for c in recipe['conclusions']]
-        normPremiseCount = len(normPremises)
+        premiseCount = len(recipe['premises'])
         closure = frozenset(normConclusions)
 
-        recipeKey = (normPremiseCount, closure)
+        recipeKey = (premiseCount, closure)
         if recipeKey in seenKeys:
             continue
         seenKeys.add(recipeKey)
@@ -362,10 +361,10 @@ if (generateAllRecipes):
         
 
     print(f"\nTotal Recipes Analyzed: {sizePremiseSets}")
-    if recipeCount > 0:
-        print(f" Total Valid Recipes Found: {recipeCount}")
+    if validRecipeCount > 0:
+        print(f" Total Valid Recipes Found: {validRecipeCount}")
         print(f" Unique Valid Recipes Found: {len(uniqueRecipes)}")
-        print(f" Invalid Recipes Discarded: {sizePremiseSets - recipeCount}")
+        print(f" Invalid Recipes Discarded: {sizePremiseSets - validRecipeCount}")
     else:
         print(" No Valid Recipes Found.")
 
