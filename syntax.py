@@ -1,0 +1,71 @@
+# AEIO forms, terms, canonicalization
+
+from dataclasses import dataclass
+
+
+form_char_to_index = {
+    'A': 0, #All S are P
+    'E': 1, #No S are P
+    'I': 2, #Some S are P
+    'O': 3  #Some S are not P
+}
+
+form_index_to_char ={
+    0: 'A', #All S are P
+    1: 'E', #No S are P
+    2: 'I', #Some S are P
+    3: 'O'  #Some S are not P
+}
+
+statement = tuple[int, int, int] #(form_index, subject_term_index, predicate_term_index)
+
+@dataclass(frozen=True)
+class SyntaxSpace:
+    term_count: int
+    term_index_to_label: tuple[str, ...] # [term_index] -> term label "A","B","C",...
+    term_label_to_index: dict[str, int] # term label "A","B","C",... -> term_index
+
+    list_of_statements: tuple[statement, ...]
+    map_statement_to_index: dict[statement, int]
+
+def build_syntax_space(term_count: int) -> SyntaxSpace:
+    term_index_to_label: tuple[str, ...] = ()
+    term_label_to_index: dict[str, int] = {}
+
+    term_index_to_label, term_label_to_index = build_terms(term_count)
+    list_of_statements, map_statement_to_index = generate_all_statements(term_count)
+
+    return SyntaxSpace(
+        term_count=term_count,
+        term_index_to_label=term_index_to_label,
+        term_label_to_index=term_label_to_index,
+        list_of_statements=list_of_statements,
+        map_statement_to_index=map_statement_to_index
+    )
+
+
+def build_terms(term_count: int) -> tuple[tuple[str, ...], dict[str, int]]:
+    terms: list[str] = []
+    term_label_to_index: dict[str, int] = {}
+    for term_index in range(term_count):
+        current_term_label = chr(ord('A') + term_index)
+        term_label_to_index[current_term_label] = term_index
+        terms += (current_term_label, )
+    term_index_to_label = tuple(terms)
+    return term_index_to_label, term_label_to_index
+
+# Generate all possible AEIO statements for given term count skipping reflexive statements
+def generate_all_statements(term_count: int) ->tuple[tuple[statement, ...], dict[statement, int]]:
+    statements = []
+    statement_map = {}
+    statement_index = 0
+    for form_index in range(4): # A,E,I,O
+        for subject_index in range(term_count): # 0 -> 'A', 1 -> 'B', ...
+            for predicate_index in range(term_count): # 0 -> 'A', 1 -> 'B', ...
+                if subject_index == predicate_index: 
+                    continue # skip statements like All S are S (reflexive statements are trivial and assumed)
+                statement = (form_index, subject_index, predicate_index)
+                statements.append(statement)
+                statement_map[statement] = statement_index
+                statement_index += 1
+    return tuple(statements), statement_map

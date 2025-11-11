@@ -1,0 +1,2386 @@
+Recipes export
+Generated: 2025-11-09T17:13:37.884778
+Term count: 3
+Config:
+  minPremises: 3
+  maxPremises: 4
+  maxDecoyTerms: 2
+  requireSingleConclusion: False
+  maxPremiseTerms: 6
+  requireAllTermsInPremises: True
+
+Total unique recipes: 90
+
+Recipe #1
+- Premises:
+   - All A are B
+   - Some A are C
+   - Some A are not C
+- Conclusions:
+   - Some B are C
+   - Some B are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #2
+- Premises:
+   - All A are B
+   - Some A are C
+   - All C are A
+- Conclusions:
+   - Some B are C
+   - All C are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #3
+- Premises:
+   - All A are B
+   - Some A are C
+   - Some C are A
+- Conclusions:
+   - Some B are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #4
+- Premises:
+   - All A are B
+   - Some A are not C
+   - All C are A
+- Conclusions:
+   - Some B are not C
+   - All C are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #5
+- Premises:
+   - All A are B
+   - Some A are not C
+   - No C are A
+- Conclusions:
+   - Some B are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #6
+- Premises:
+   - All A are B
+   - All B are A
+   - All C are A
+- Conclusions:
+   - All C are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #7
+- Premises:
+   - All A are B
+   - All B are A
+   - All C are B
+- Conclusions:
+   - All C are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #8
+- Premises:
+   - All A are B
+   - Some B are A
+   - All B are C
+- Conclusions:
+   - All A are C
+   - Some A are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #9
+- Premises:
+   - All A are B
+   - Some B are A
+   - No B are C
+- Conclusions:
+   - No A are C
+   - Some A are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #10
+- Premises:
+   - All A are B
+   - Some B are A
+   - Some C are not B
+- Conclusions:
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #11
+- Premises:
+   - All A are B
+   - Some B are not A
+   - All B are C
+- Conclusions:
+   - All A are C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #12
+- Premises:
+   - All A are B
+   - Some B are not A
+   - No B are C
+- Conclusions:
+   - No A are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #13
+- Premises:
+   - All A are B
+   - All B are C
+   - All C are B
+- Conclusions:
+   - All A are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #14
+- Premises:
+   - All A are B
+   - No B are C
+   - Some C are not B
+- Conclusions:
+   - No A are C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #15
+- Premises:
+   - No A are B
+   - Some A are C
+   - No B are A
+- Conclusions:
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #16
+- Premises:
+   - No A are B
+   - Some A are C
+   - All C are A
+- Conclusions:
+   - No B are C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #17
+- Premises:
+   - No A are B
+   - Some A are not C
+   - All C are A
+- Conclusions:
+   - No B are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #18
+- Premises:
+   - No A are B
+   - Some B are not A
+   - All C are A
+- Conclusions:
+   - No B are C
+   - Some B are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #19
+- Premises:
+   - Some A are B
+   - Some A are not B
+   - All A are C
+- Conclusions:
+   - Some B are C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #20
+- Premises:
+   - Some A are B
+   - Some A are not B
+   - All C are B
+- Conclusions:
+   - Some A are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #21
+- Premises:
+   - Some A are B
+   - All A are C
+   - All B are A
+- Conclusions:
+   - All B are C
+   - Some B are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #22
+- Premises:
+   - Some A are B
+   - Some B are A
+   - All B are C
+- Conclusions:
+   - Some A are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #23
+- Premises:
+   - Some A are B
+   - Some B are not A
+   - All B are C
+- Conclusions:
+   - Some A are C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #24
+- Premises:
+   - Some A are not B
+   - All A are C
+   - All B are A
+- Conclusions:
+   - All B are C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #25
+- Premises:
+   - Some A are not B
+   - All B are A
+   - All C are B
+- Conclusions:
+   - Some A are not C
+   - All C are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #26
+- Premises:
+   - All A are C
+   - All B are A
+   - All C are A
+- Conclusions:
+   - All B are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #27
+- Premises:
+   - All A are C
+   - All B are C
+   - All C are A
+- Conclusions:
+   - All B are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #28
+- Premises:
+   - All A are C
+   - All B are C
+   - All C are B
+- Conclusions:
+   - All A are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #29
+- Premises:
+   - All A are C
+   - No B are C
+   - Some C are A
+- Conclusions:
+   - No A are B
+   - Some A are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #30
+- Premises:
+   - All A are C
+   - No B are C
+   - Some C are not A
+- Conclusions:
+   - No A are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #31
+- Premises:
+   - All A are C
+   - Some B are C
+   - Some B are not C
+- Conclusions:
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #32
+- Premises:
+   - All A are C
+   - Some B are not C
+   - All C are B
+- Conclusions:
+   - All A are B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #33
+- Premises:
+   - All A are C
+   - Some B are not C
+   - No C are B
+- Conclusions:
+   - No A are B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #34
+- Premises:
+   - All A are C
+   - Some C are A
+   - All C are B
+- Conclusions:
+   - All A are B
+   - Some A are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #35
+- Premises:
+   - Some A are C
+   - Some A are not C
+   - All B are C
+- Conclusions:
+   - Some A are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #36
+- Premises:
+   - Some A are C
+   - Some C are A
+   - All C are B
+- Conclusions:
+   - Some A are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #37
+- Premises:
+   - Some A are C
+   - Some C are not A
+   - All C are B
+- Conclusions:
+   - Some A are B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #38
+- Premises:
+   - Some A are not C
+   - All B are C
+   - All C are A
+- Conclusions:
+   - Some A are not B
+   - All B are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #39
+- Premises:
+   - All B are A
+   - Some B are C
+   - Some B are not C
+- Conclusions:
+   - Some A are C
+   - Some A are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #40
+- Premises:
+   - All B are A
+   - Some B are C
+   - All C are B
+- Conclusions:
+   - Some A are C
+   - All C are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #41
+- Premises:
+   - All B are C
+   - All C are A
+   - Some C are B
+- Conclusions:
+   - Some A are B
+   - All B are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #42
+- Premises:
+   - Some B are C
+   - All C are A
+   - Some C are not B
+- Conclusions:
+   - Some A are B
+   - Some A are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #43
+- Premises:
+   - All A are B
+   - All A are C
+   - All B are A
+   - All C are A
+- Conclusions:
+   - All B are C
+   - Some B are C
+   - All C are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #44
+- Premises:
+   - All A are B
+   - All A are C
+   - All B are A
+   - Some C are A
+- Conclusions:
+   - All B are C
+   - Some B are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #45
+- Premises:
+   - All A are B
+   - All A are C
+   - Some B are A
+   - All C are A
+- Conclusions:
+   - Some B are C
+   - All C are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #46
+- Premises:
+   - All A are B
+   - Some A are C
+   - Some A are not C
+   - All C are A
+- Conclusions:
+   - Some B are C
+   - Some B are not C
+   - All C are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #47
+- Premises:
+   - All A are B
+   - Some A are C
+   - Some A are not C
+   - Some C are A
+- Conclusions:
+   - Some B are C
+   - Some B are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #48
+- Premises:
+   - All A are B
+   - Some A are C
+   - All B are A
+   - Some C are not A
+- Conclusions:
+   - Some B are C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #49
+- Premises:
+   - All A are B
+   - Some A are not C
+   - All B are A
+   - No C are A
+- Conclusions:
+   - No B are C
+   - Some B are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #50
+- Premises:
+   - All A are B
+   - Some A are not C
+   - All B are A
+   - Some C are not A
+- Conclusions:
+   - Some B are not C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #51
+- Premises:
+   - All A are B
+   - All B are A
+   - All B are C
+   - All C are B
+- Conclusions:
+   - All A are C
+   - Some A are C
+   - All C are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #52
+- Premises:
+   - All A are B
+   - All B are A
+   - All B are C
+   - Some C are B
+- Conclusions:
+   - All A are C
+   - Some A are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #53
+- Premises:
+   - All A are B
+   - All B are A
+   - Some B are C
+   - Some C are not B
+- Conclusions:
+   - Some A are C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #54
+- Premises:
+   - All A are B
+   - All B are A
+   - Some B are not C
+   - No C are B
+- Conclusions:
+   - No A are C
+   - Some A are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #55
+- Premises:
+   - All A are B
+   - All B are A
+   - Some B are not C
+   - Some C are not B
+- Conclusions:
+   - Some A are not C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #56
+- Premises:
+   - All A are B
+   - Some B are A
+   - Some B are not A
+   - All B are C
+- Conclusions:
+   - All A are C
+   - Some A are C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #57
+- Premises:
+   - All A are B
+   - Some B are A
+   - Some B are not A
+   - All C are A
+- Conclusions:
+   - Some B are not C
+   - All C are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #58
+- Premises:
+   - All A are B
+   - Some B are A
+   - No B are C
+   - Some C are not B
+- Conclusions:
+   - No A are C
+   - Some A are not C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #59
+- Premises:
+   - All A are B
+   - Some B are A
+   - Some B are C
+   - Some C are not B
+- Conclusions:
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #60
+- Premises:
+   - All A are B
+   - Some B are not A
+   - No B are C
+   - No C are B
+- Conclusions:
+   - No A are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #61
+- Premises:
+   - All A are B
+   - Some B are not A
+   - No B are C
+   - Some C are not B
+- Conclusions:
+   - No A are C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #62
+- Premises:
+   - All A are B
+   - All B are C
+   - Some C are B
+   - Some C are not B
+- Conclusions:
+   - All A are C
+   - Some C are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #63
+- Premises:
+   - No A are B
+   - Some A are C
+   - No B are A
+   - All C are A
+- Conclusions:
+   - No B are C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #64
+- Premises:
+   - No A are B
+   - Some A are C
+   - No B are A
+   - Some C are A
+- Conclusions:
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #65
+- Premises:
+   - No A are B
+   - Some A are C
+   - Some B are not A
+   - All C are A
+- Conclusions:
+   - No B are C
+   - Some B are not C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #66
+- Premises:
+   - No A are B
+   - Some A are not C
+   - No B are A
+   - All C are A
+- Conclusions:
+   - No B are C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #67
+- Premises:
+   - Some A are B
+   - Some A are not B
+   - All A are C
+   - All B are A
+- Conclusions:
+   - All B are C
+   - Some B are C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #68
+- Premises:
+   - Some A are B
+   - Some A are not B
+   - All B are A
+   - All C are B
+- Conclusions:
+   - Some A are not C
+   - All C are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #69
+- Premises:
+   - Some A are B
+   - Some A are not B
+   - Some B are A
+   - All C are B
+- Conclusions:
+   - Some A are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #70
+- Premises:
+   - Some A are B
+   - Some A are not B
+   - All B are C
+   - All C are B
+- Conclusions:
+   - Some A are C
+   - Some A are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #71
+- Premises:
+   - Some A are B
+   - No A are C
+   - Some B are A
+   - No C are A
+- Conclusions:
+   - Some B are not C
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #72
+- Premises:
+   - Some A are B
+   - All B are A
+   - All B are C
+   - All C are B
+- Conclusions:
+   - Some A are C
+   - All C are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #73
+- Premises:
+   - Some A are not B
+   - All B are A
+   - Some B are C
+   - All C are B
+- Conclusions:
+   - Some A are C
+   - Some A are not C
+   - All C are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'C']
+   activeTerms (2): ['A', 'C']
+   decoyTerms (1): ['B']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #74
+- Premises:
+   - All A are C
+   - All B are A
+   - Some C are A
+   - Some C are not A
+- Conclusions:
+   - All B are C
+   - Some C are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['B', 'C']
+   activeTerms (2): ['B', 'C']
+   decoyTerms (1): ['A']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #75
+- Premises:
+   - All A are C
+   - All B are C
+   - All C are A
+   - All C are B
+- Conclusions:
+   - All A are B
+   - Some A are B
+   - All B are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #76
+- Premises:
+   - All A are C
+   - No B are C
+   - All C are A
+   - Some C are not B
+- Conclusions:
+   - No A are B
+   - Some A are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #77
+- Premises:
+   - All A are C
+   - No B are C
+   - Some C are not A
+   - No C are B
+- Conclusions:
+   - No A are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #78
+- Premises:
+   - All A are C
+   - Some B are C
+   - Some B are not C
+   - All C are A
+- Conclusions:
+   - Some A are B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #79
+- Premises:
+   - All A are C
+   - Some B are C
+   - Some B are not C
+   - Some C are A
+- Conclusions:
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #80
+- Premises:
+   - All A are C
+   - Some B are C
+   - Some B are not C
+   - All C are B
+- Conclusions:
+   - All A are B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #81
+- Premises:
+   - All A are C
+   - Some B are C
+   - All C are A
+   - All C are B
+- Conclusions:
+   - All A are B
+   - Some A are B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #82
+- Premises:
+   - All A are C
+   - Some B are not C
+   - All C are A
+   - Some C are not B
+- Conclusions:
+   - Some A are not B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #83
+- Premises:
+   - All A are C
+   - Some B are not C
+   - Some C are A
+   - All C are B
+- Conclusions:
+   - All A are B
+   - Some A are B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #84
+- Premises:
+   - All A are C
+   - Some B are not C
+   - Some C are A
+   - No C are B
+- Conclusions:
+   - No A are B
+   - Some A are not B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #85
+- Premises:
+   - All A are C
+   - Some B are not C
+   - Some C are not A
+   - No C are B
+- Conclusions:
+   - No A are B
+   - Some B are not A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #86
+- Premises:
+   - Some A are C
+   - Some A are not C
+   - All B are C
+   - All C are A
+- Conclusions:
+   - Some A are not B
+   - All B are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #87
+- Premises:
+   - Some A are C
+   - Some A are not C
+   - All B are C
+   - Some C are A
+- Conclusions:
+   - Some A are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #88
+- Premises:
+   - Some A are C
+   - Some A are not C
+   - All B are C
+   - All C are B
+- Conclusions:
+   - Some A are B
+   - Some A are not B
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #89
+- Premises:
+   - Some A are C
+   - All B are C
+   - All C are A
+   - All C are B
+- Conclusions:
+   - Some A are B
+   - All B are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+
+Recipe #90
+- Premises:
+   - Some A are not C
+   - All B are C
+   - All C are A
+   - Some C are B
+- Conclusions:
+   - Some A are B
+   - Some A are not B
+   - All B are A
+- Term Activity:
+   premiseTerms (3): ['A', 'B', 'C']
+   conclusionTerms (2): ['A', 'B']
+   activeTerms (2): ['A', 'B']
+   decoyTerms (1): ['C']
+- Valid: True
+- Diagnostics:
+   hasModel: True
+   tooManyPremises: False
+   tooManyDecoys: False
+   redundantPremise: False
+   singleConclusion: True
+   onlyIsolatedI: False
+   AEConflict: False
+   universalParticularOverlap: False
+
+============================================================
+

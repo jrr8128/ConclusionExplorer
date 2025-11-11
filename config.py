@@ -1,0 +1,1 @@
+# Configuration for BFS search parameters
