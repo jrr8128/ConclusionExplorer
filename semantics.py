@@ -43,6 +43,6 @@ def build_semantic_space(term_count: int) -> SemanticSpace:
     return SemanticSpace(
         term_count=term_count,
         types_count=types_count,
-        type_patterns=tuple(patterns),
-        term_to_type_mask=tuple(type_mask),
+        type_patterns=tuple(type_patterns),
+        term_to_type_mask=tuple(term_to_type_mask),
     )
