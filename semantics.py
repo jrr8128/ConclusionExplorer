@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class SemanticSpace:
     term_count: int
     types_count: int
+    universe_mask: int
     type_patterns: tuple[int, ...]
     term_to_type_mask: tuple[int, ...]
 
@@ -12,9 +13,25 @@ class SemanticSpace:
 def build_semantic_space(term_count: int) -> SemanticSpace:
     # 2^term_count; ven diagram regions
     types_count = 1 << term_count 
+    universe_mask = (1 << types_count) - 1
     # patterns: [0][1]...[2^term_count -1] (bits over terms)
-    type_patterns = [k for k in range(types_count)]  
-    # (bits over types) for each term [0,...,0] with length term_count
+    type_patterns = build_type_patterns(types_count) 
+
+    term_to_type_mask = build_term_to_type_mask(term_count, types_count, type_patterns)
+
+    return SemanticSpace(
+        term_count=term_count,
+        types_count=types_count,
+        universe_mask=universe_mask,
+        type_patterns=type_patterns,
+        term_to_type_mask=term_to_type_mask
+    )
+
+def build_type_patterns(types_count: int)-> tuple[int, ...]:
+    return [k for k in range(types_count)]
+
+def build_term_to_type_mask(term_count:int, types_count: int, type_patterns: tuple[int, ...]) -> tuple[int, ...]:
+     # (bits over types) for each term [0,...,0] with length term_count
     term_to_type_mask = [0] * term_count  
     # For each term, build bitmask over types where term is present
     # ex. for 2 terms A,B: A = 1, B = 2
@@ -38,11 +55,26 @@ def build_semantic_space(term_count: int) -> SemanticSpace:
             if (type_patterns[type_index] >> term_index) & 1:
                 mask |= (1 << type_index)
         term_to_type_mask[term_index] = mask
+        return term_to_type_mask
+
+def get_mask_complement(mask: int, universe_mask: int) -> int:
+    return mask ^ universe_mask
+
+# Need to make sure that 
+def check_all_s_are_p(s_mask:int, p_mask: int, universe_mask:int) -> bool:
+    return s_mask & get_mask_complement(p_mask, universe_mask) == 0
+
+# Need to make sure that S doesn't coincide with P
+def check_no_s_are_p(s_mask: int, p_mask: int) -> bool:
+    return s_mask & p_mask == 0
+
+# Need to make sure that if S exists it coincides with P (IE: S & P != 0)
+def check_some_s_are_p(s_mask: int, p_mask: int) -> bool:
+    return s_mask & p_mask != 0
+
+# Need to make sure that if S exists that it doesn't coincide with P (IE: S & ~P != 0)
+def check_some_s_are_not_p(s_mask: int, p_mask: int, universe_mask: int) -> bool:
+    return s_mask & get_mask_complement(p_mask, universe_mask) != 0
 
 
-    return SemanticSpace(
-        term_count=term_count,
-        types_count=types_count,
-        type_patterns=tuple(type_patterns),
-        term_to_type_mask=tuple(term_to_type_mask),
-    )
+    
