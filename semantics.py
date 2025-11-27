@@ -9,7 +9,11 @@ class SemanticSpace:
     type_patterns: tuple[int, ...]
     term_to_type_mask: tuple[int, ...]
 
-
+# Relying on the Small Model Property (SMP) for AEIO logic to reduce the number of types to consider
+# SMP states that if a conclusion is valid it can be demonstrated in a model with at most n elements
+# where n is the number of terms in the premises and conclusion
+# Thus we only need to consider types (regions) that have at most n elements 
+# This reduces the number of types from 2^(2^n) to 2^n - 1 
 def build_semantic_space(term_count: int) -> SemanticSpace:
     # 2^term_count; ven diagram regions
     types_count = 1 << term_count 
@@ -30,6 +34,7 @@ def build_semantic_space(term_count: int) -> SemanticSpace:
 def build_type_patterns(types_count: int)-> tuple[int, ...]:
     return [k for k in range(types_count)]
 
+# For each term, build bitmask over types where term is present
 def build_term_to_type_mask(term_count:int, types_count: int, type_patterns: tuple[int, ...]) -> tuple[int, ...]:
      # (bits over types) for each term [0,...,0] with length term_count
     term_to_type_mask = [0] * term_count  
@@ -48,7 +53,7 @@ def build_term_to_type_mask(term_count:int, types_count: int, type_patterns: tup
             # Check if the bit at position type_index when moved right by term_index is 1
             # ex. type_index = 5 (101 binary), term_index = 0 -> (101 >> 0) = 1 & 1 = 1 (present)
             # ex. type_index = 5 (101 binary), term_index = 1 -> (101 >> 1) = 10 & 1 = 0 (not present)
-            # Then if it's present, we bitwise or the mask with (1 << type_index) to set that bit
+            # Then if it's present, we bitwise OR the mask with (1 << type_index) to set that bit
             # ex for term_index = 0, type_index = 0 -> mask |= (1 << 0) -> mask = 1 (binary)
             # ex.for term_index = 0, type_index = 2 -> 
             # mask (=1 from previous) |= (1 << 2) (=100) -> mask = 101 (binary)

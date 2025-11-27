@@ -43,7 +43,11 @@ def build_syntax_space(term_count: int) -> SyntaxSpace:
         map_statement_to_index=map_statement_to_index
     )
 
-
+# Generate term labels and mappings for given term count
+# For example: term_count = 3 -> ('A','B','C'), {'A':0,'B':1,'C':2}
+# Returns two structures:
+# 1. tuple of term labels indexed by term index i.e. for term_count = 3 -> ('A','B','C')
+# 2. dict mapping term labels to term indices i.e. for term_count = 3 -> {'A':0,'B':1,'C':2}
 def build_terms(term_count: int) -> tuple[tuple[str, ...], dict[str, int]]:
     terms: list[str] = []
     term_label_to_index: dict[str, int] = {}
@@ -55,6 +59,11 @@ def build_terms(term_count: int) -> tuple[tuple[str, ...], dict[str, int]]:
     return term_index_to_label, term_label_to_index
 
 # Generate all possible AEIO statements for given term count skipping reflexive statements
+# For example: term_count = 2 -> ((0,0,1),(0,1,0),(1,0,1),(1,1,0),(2,0,1),(2,1,0),(3,0,1),(3,1,0))
+# (0,0,1) = All A are B, (0,1,0) = All B are A, (1,0,1) = No A are B, etc.
+# Returns two structures:
+# 1. tuple of all possible statements (form_index, subject_term_index, predicate_term_index) ie. ((0,0,1),(0,1,0),...)
+# 2. dict mapping each statement to its index in the tuple ie. {(0,0,1):0,(0,1,0):1,...}
 def generate_all_statements(term_count: int) ->tuple[tuple[statement, ...], dict[statement, int]]:
     statements = []
     statement_map = {}
