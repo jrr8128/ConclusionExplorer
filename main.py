@@ -1,3 +1,4 @@
+import itertools
 import search
 import os
 
@@ -9,6 +10,9 @@ max_depth = 18
 search_tree = search.build_initial_search_tree(term_count)
 term_index_to_label = search_tree.syntax_space.term_index_to_label
 nodes = search.search(search_tree, limit_depth, max_depth)
+
+term_list = search_tree.syntax_space.term_index_to_label
+permutations = list(itertools.permutations(range(term_count)))
 
 format_text ={
     0: "All {S} are {P}",
@@ -24,14 +28,65 @@ def format_statement(statement: tuple[int,int,int], term_index_to_label: tuple[s
                             P=term_index_to_label[p]
                             )
 
+def compute_isomorphism(node, permutations):
+    best = None
+
+    for permutation in permutations:
+        renamed_premises = set()
+        renamed_conclusions = set()
+        for premise in node.premises:
+            if premise[0] in (1,2):
+                renamed_premises.add((premise[0], min(permutation[premise[1]], permutation[premise[2]]), max(permutation[premise[1]], permutation[premise[2]])))
+            else:
+                renamed_premises.add((premise[0], permutation[premise[1]], permutation[premise[2]]))
+        for conclusion in node.validConclusions:
+            if conclusion[0] in (1,2):
+                renamed_conclusions.add((conclusion[0], min(permutation[conclusion[1]], permutation[conclusion[2]]), max(permutation[conclusion[1]], permutation[conclusion[2]])))
+            else:
+                renamed_conclusions.add((conclusion[0], permutation[conclusion[1]], permutation[conclusion[2]]))
+        sorted_premises = sorted(renamed_premises)
+        sorted_conclusions = sorted(renamed_conclusions)
+        candidate_iso = (tuple(sorted_premises), tuple(sorted_conclusions))
+        if best is None:
+            best = candidate_iso
+        else:
+            best = min(best, candidate_iso)
+    return best
+
+
 groups = {"conclusions": {}, "no_conclusion": {}}
 
+added_isomorphisms = {}
+skipped = 0
+pre_counts = {}
 for node in nodes:
+    node_isomorphism = compute_isomorphism(node, permutations)
     k = len(node.premises)
     bucket = "conclusions" if node.validConclusions else "no_conclusion"
     if k not in groups[bucket]:
         groups[bucket][k] = []
+    iso_key = (bucket,k)
+    if iso_key not in pre_counts:
+        pre_counts[iso_key] = 0
+    pre_counts[iso_key] = pre_counts.get(iso_key, 0) + 1
+    if iso_key not in added_isomorphisms:
+        added_isomorphisms[iso_key] = set()
+    if node_isomorphism in added_isomorphisms[iso_key]:
+        skipped += 1
+        continue
+    else:
+        added_isomorphisms[iso_key].add(node_isomorphism)
     groups[bucket][k].append(node)
+
+print("Pre Iso #'s Per Bucket:")
+for bucket in ("conclusions", "no_conclusion"):
+    print(f"For Bucket: {bucket}")
+    for (b, k), count in sorted(pre_counts.items()):
+        if b == bucket:
+            print(f"# of puzzles with {k} premises: {count}")
+
+print(f"Number of Isomorphisms: ", sum(len(s) for s in added_isomorphisms.values()))
+print(f"Number of skipped nodes: ", skipped)
 
 for bucket in groups:
     for k in sorted(groups[bucket]):
