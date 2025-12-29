@@ -17,7 +17,7 @@ form_index_to_char ={
     3: 'O'  #Some S are not P
 }
 
-statement = tuple[int, int, int] #(form_index, subject_term_index, predicate_term_index)
+statement = tuple[int, tuple(int,int), tuple(int,int)] #(form_index, (subject_term_index, is_positive), (predicate_term_index, is_positive)
 
 @dataclass(frozen=True)
 class SyntaxSpace:
@@ -45,11 +45,11 @@ class SyntaxSpace:
         return term_index_to_label, term_label_to_index
 
     # Generate all possible AEIO statements for given term count skipping reflexive statements
-    # For example: term_count = 2 -> ((0,0,1),(0,1,0),(1,0,1),(1,1,0),(2,0,1),(2,1,0),(3,0,1),(3,1,0))
+    # For example: term_count = 2 -> ((0,(0,0),(1,0)),(0,(0,1),(1,0)),(0,(0,0),(1,1)),(0,(0,1),(1,1)),...
     # (0,0,1) = All A are B, (0,1,0) = All B are A, (1,0,1) = No A are B, etc.
     # Returns two structures:
-    # 1. tuple of all possible statements (form_index, subject_term_index, predicate_term_index) ie. ((0,0,1),(0,1,0),...)
-    # 2. dict mapping each statement to its index in the tuple ie. {(0,0,1):0,(0,1,0):1,...}
+    # 1. tuple of all possible statements (form_index, subject_term_index, predicate_term_index) 
+    # 2. dict mapping each statement to its index in the tuple ie. {(0,(0,0),(1,0)):0,(0,(0,1),(1,0)):1,...}
     @staticmethod
     def generate_all_statements(term_count: int) ->tuple[tuple[statement, ...], dict[statement, int]]:
         statements = []
@@ -57,15 +57,17 @@ class SyntaxSpace:
         statement_index = 0
         for form_index in range(4): # A,E,I,O
             for subject_index in range(term_count): # 0 -> 'A', 1 -> 'B', ...
-                for predicate_index in range(term_count): # 0 -> 'A', 1 -> 'B', ...
-                    if subject_index == predicate_index: 
-                        continue # skip statements like All S are S (reflexive statements are trivial and assumed)
-                    if(form_index in (1,2)) and subject_index > predicate_index:
-                        continue # skip E and I statements not in canonical order to avoid duplicates (No B are A is same as No A are B)
-                    statement = (form_index, subject_index, predicate_index)
-                    statements.append(statement)
-                    statement_map[statement] = statement_index
-                    statement_index += 1
+                for subject_is_positive in (0,1):
+                    for predicate_index in range(term_count): # 0 -> 'A', 1 -> 'B', ...
+                        for predicate_is_positive in range(0,1):
+                            if (subject_index, subject_is_positive) == (predicate_index, predicate_is_positive): 
+                                continue # skip statements like All S are S (reflexive statements are trivial and assumed)
+                            if(form_index in (1,2)) and (subject_index, subject_is_positive) > (predicate_index, predicate_is_positive):
+                                continue # skip E and I statements not in canonical order to avoid duplicates (No B are A is same as No A are B)
+                            statement = (form_index, (subject_index, subject_is_positive), (predicate_index, predicate_is_positive))
+                            statements.append(statement)
+                            statement_map[statement] = statement_index
+                            statement_index += 1
         return tuple(statements), statement_map
     
     @staticmethod
