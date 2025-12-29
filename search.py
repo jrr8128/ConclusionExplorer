@@ -14,7 +14,7 @@ import time
 # Needs to hold valid conclusions, resultant from the current running mask
 @dataclass
 class Node:
-    premises: tuple[int, ...]
+    premises: tuple[tuple[int, int, int],...]
     allowed_regions_mask: int
     existence_constraints_masks: tuple[int, ...]
     validConclusions: set[tuple[int,int,int]]
@@ -124,6 +124,19 @@ def generate_valid_conclusions(search_tree: SearchTree, allowed_regions_mask, ex
             validConclusions.add(statement)
     return validConclusions
 
+def replace_weaker_premise_then_append(premises, statement):
+    min_premises = []
+    for premise in premises:
+        if statement[0] == 0 and premise[0] == 2:
+            if (min(premise[1], premise[2]) == min(statement[1], statement[2]) and
+                max(premise[1], premise[2]) == max(statement[1], statement[2])):
+                continue
+        if statement[0] == 1 and premise[0] == 3:
+            if (premise[1] == statement[1] and premise[2] == statement [2]) or (premise[2] == statement[1] and premise[1] == statement [2]):
+                continue
+        min_premises.append(premise)
+    min_premises.append(statement)
+    return tuple(min_premises)
 
 def search(search_tree: SearchTree, constraint_depth: bool, max_depth: int):
     if(not constraint_depth):
@@ -140,6 +153,7 @@ def search(search_tree: SearchTree, constraint_depth: bool, max_depth: int):
 
     valid_node_count = 0
     pruned_node_count = 0
+    node_states = set()
     while(search_queue):
         current_node = search_queue.popleft()
         if len(current_node.premises) >= max_depth:
@@ -167,34 +181,40 @@ def search(search_tree: SearchTree, constraint_depth: bool, max_depth: int):
                 continue
             if statement in not_allowed:
                 continue
-
+            
+            new_node_premises = replace_weaker_premise_then_append(current_node.premises, statement)
 
             new_node_allowed_regions_mask = current_node.allowed_regions_mask
-            new_node_existence_constraint_masks = current_node.existence_constraints_masks
-            S_mask = search_tree.semantic_space.regions_where_term_is_true[statement[1]]
-            P_mask = search_tree.semantic_space.regions_where_term_is_true[statement[2]]
-            if (S_mask not in new_node_existence_constraint_masks):
-                new_node_existence_constraint_masks = new_node_existence_constraint_masks + (S_mask,)
-            if (P_mask not in new_node_existence_constraint_masks):
-                new_node_existence_constraint_masks = new_node_existence_constraint_masks + (P_mask,)
+            new_node_existence_constraint_masks = ()
 
-            if(statement[0] in (0,1)):
-                new_allowed_regions_mask = update_allowed_regions_mask(
-                                                search_tree.semantic_space, 
-                                                current_node.allowed_regions_mask,
-                                                statement
-                                                )
-                new_node_allowed_regions_mask = new_allowed_regions_mask
-            if(statement[0] in (2,3)):
-                new_existence_constraint = create_existence_constraint(search_tree.semantic_space,
-                                                                       new_node_allowed_regions_mask,
-                                                                       statement
-                                                                       )
-                if(new_existence_constraint & new_node_allowed_regions_mask == 0):
-                    pruned_node_count += 1
-                    continue        
-                else:
-                    new_node_existence_constraint_masks = new_node_existence_constraint_masks + (new_existence_constraint,)
+            prune_node = False
+            for premise in new_node_premises:
+                if(premise[0] in (0,1)):
+                    new_allowed_regions_mask = update_allowed_regions_mask(
+                                                    search_tree.semantic_space, 
+                                                    new_node_allowed_regions_mask,
+                                                    premise
+                                                    )
+                    new_node_allowed_regions_mask = new_allowed_regions_mask
+            term_masks = set()
+            for premise in new_node_premises:
+                term_masks.add(search_tree.semantic_space.regions_where_term_is_true[premise[1]])
+                term_masks.add(search_tree.semantic_space.regions_where_term_is_true[premise[2]])
+            new_node_existence_constraint_masks += tuple(term_masks)
+            for premise in new_node_premises:
+                if(premise[0] in (2,3)):
+                    new_existence_constraint = create_existence_constraint(search_tree.semantic_space,
+                                                                        new_node_allowed_regions_mask,
+                                                                        premise
+                                                                        )
+                    if(new_existence_constraint & new_node_allowed_regions_mask == 0):
+                        pruned_node_count += 1
+                        prune_node = True
+                        break        
+                    else:
+                        new_node_existence_constraint_masks = new_node_existence_constraint_masks + (new_existence_constraint,)
+            if prune_node:
+                continue     
 
             isConsistent = True
             for existence_constraint in new_node_existence_constraint_masks:
@@ -204,18 +224,30 @@ def search(search_tree: SearchTree, constraint_depth: bool, max_depth: int):
             if not isConsistent:
                 pruned_node_count += 1
                 continue
-            new_node_premises = current_node.premises + (statement,)
+            
+            normalized_constraints = tuple(sorted(set((c & new_node_allowed_regions_mask) for c in new_node_existence_constraint_masks)))
+            state_key = (new_node_allowed_regions_mask, normalized_constraints)
+            if state_key in node_states:
+                continue
+            else:
+                node_states.add(state_key)
+
+            
+
+            
             new_node_conclusions = set()
             if (len(new_node_premises) >= 2):
-                new_node_conclusions = generate_valid_conclusions(search_tree, new_node_allowed_regions_mask, new_node_existence_constraint_masks, new_node_premises)
+                new_node_conclusions = generate_valid_conclusions(search_tree, new_node_allowed_regions_mask, normalized_constraints, new_node_premises)
+            
             new_node = Node(
                 premises=new_node_premises,
                 allowed_regions_mask=new_node_allowed_regions_mask,
-                existence_constraints_masks=new_node_existence_constraint_masks,
+                existence_constraints_masks=normalized_constraints,
                 validConclusions=new_node_conclusions,
                 last_statement_index=i,
                 parent_node=current_node
             )
+
             search_queue.append(new_node)
             valid_nodes.append(new_node)
             valid_node_count +=1

@@ -3,7 +3,7 @@ import search
 import os
 
 
-term_count = 3
+term_count = 4
 limit_depth = False
 max_depth = 18
 
