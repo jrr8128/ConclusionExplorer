@@ -15,45 +15,67 @@
 #   attach_recipe(key, recipe_signature) -> None
 
 
-from ConclusionExplorer.types import CanonicalState, State
-recipe_bucket = dict
-# For each canonical semantic state:
-seen_depth : dict[tuple[int, tuple[int,...]], int] = {} # store smallest number of premises used to reach it
-recipes : dict[tuple[int, tuple[int,...]], recipe_bucket] = {} # store first recipe found (base), every other recipe maps to same state
+from dataclasses import dataclass, field
+from ConclusionExplorer.types import State
 
 
-def canonicalize_state(state: State) -> CanonicalState:
-    canoncalized_constraints = tuple(sorted(set(state[1])))
-    return (state[0], canoncalized_constraints)
+@staticmethod
+def canonicalize_state(state: State) -> State:
+    allowed_regions_mask, constraints = state
+   
+    normalized = []
+    for constraint in set(constraints):
+        constraint = constraint & allowed_regions_mask
+        if constraint != 0:
+            normalized.append(constraint)
+    
+    kept_constraints = []
+    for constraint1 in normalized:
+        redundant = False
+        for constraint2 in normalized:
+            if constraint2 != constraint1 and (constraint2 & constraint1) == constraint2:
+                redundant = True
+                break
+        if not redundant:
+            kept_constraints.append(constraint1)
+    
+    canonical_constraints = tuple(sorted(set(kept_constraints)))
+    return (allowed_regions_mask, canonical_constraints)
 
-def _should_expand(canonical_state: CanonicalState, depth: int) -> bool:
-    if canonical_state not in seen_depth:
-        return True
-    if depth < seen_depth[canonical_state]:
-        return True
-    return False
+@dataclass
+class Memo:
+    # For each canonical semantic state:
+    seen_depth : dict[tuple[int, tuple[int,...]], int] = field(default_factory=dict) # store smallest number of premises used to reach it
+    recipes : dict[tuple[int, tuple[int,...]], dict] = field(default_factory=dict) # store first recipe found (base), every other recipe maps to same state
 
-def _mark_expanded(canonical_state: CanonicalState, depth: int):
-    if canonical_state not in seen_depth or depth < seen_depth[canonical_state]:
-        seen_depth[canonical_state] = depth
+    def _should_expand(self, canonical_state: State, depth: int) -> bool:
+        if canonical_state not in self.seen_depth:
+            return True
+        if depth < self.seen_depth[canonical_state]:
+            return True
+        return False
 
-def _attach_recipe(canonical_state: CanonicalState, recipe_signature):
-    if canonical_state not in recipes:
-        recipes[canonical_state] = {
-            "base": recipe_signature,
-            "variants": list[recipe_signature]
-        }
-    else:
-        recipes[canonical_state]["variants"].append(recipe_signature)
+    def _mark_expanded(self, canonical_state: State, depth: int):
+        if canonical_state not in self.seen_depth or depth < self.seen_depth[canonical_state]:
+            self.seen_depth[canonical_state] = depth
 
-def accept(state: State, depth: int) ->tuple[bool, CanonicalState | None]:
-    """
-    Returns (accepted, canonical_state); canonical_state is non-None iff accepted.
-    If True, the state is already recorded at best depth.
-    Canonicalizes state = (allowed_regions_mask, existence_constraints_masks).
-    """
-    canonical_state = canonicalize_state(state)
-    if(_should_expand(canonical_state, depth)):
-        _mark_expanded(canonical_state, depth)
-        return (True, canonical_state)
-    return (False, None)
+    def _attach_recipe(self, canonical_state: State, recipe_signature):
+        if canonical_state not in self.recipes:
+            self.recipes[canonical_state] = {
+                "base": recipe_signature,
+                "variants": list[recipe_signature]
+            }
+        else:
+            self.recipes[canonical_state]["variants"].append(recipe_signature)
+
+    def accept(self, state: State, depth: int) ->tuple[bool, State | None]:
+        """
+        Returns (accepted, canonical_state); canonical_state is non-None iff accepted.
+        If True, the state is already recorded at best depth.
+        Canonicalizes state = (allowed_regions_mask, existence_constraints_masks).
+        """
+        canonical_state = canonicalize_state(state)
+        if(self._should_expand(canonical_state, depth)):
+            self._mark_expanded(canonical_state, depth)
+            return (True, canonical_state)
+        return (False, None)

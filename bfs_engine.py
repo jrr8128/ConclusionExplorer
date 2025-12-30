@@ -9,24 +9,45 @@
 
 import collections
 from dataclasses import dataclass
-from ConclusionExplorer import expansion_policy, memo
+import time
+from ConclusionExplorer import dag, expansion_policy, memo
 from ConclusionExplorer.node import Node
 
+def search_tree(root: Node, dag_instance: dag.DAG):
+    popped_count = 0
+    enqueued_count = 0
+    start_time = time.monotonic()
+    last_print_time = start_time - 2
 
-def search_tree(root: Node):
     search_queue = collections.deque()
     search_queue.append(root)
     while(search_queue): 
         current_node = search_queue.popleft()
-        child_nodes : list[Node] = expansion_policy.expand(current_node)
-        for child_node in child_nodes:
-            accepted, canonical_state = memo.canonicalize_state((child_node.allowed_regions_mask, child_node.existence_constraints_masks), child_node.depth)
-            if(accepted):
-                new_node = Node(canonical_state[0],
-                                canonical_state[1],
-                                child_node.depth,
-                                child_node.last_index)
-                search_queue.append(new_node)
+        popped_count += 1
+        for child_node in dag_instance.expand(current_node):
+                search_queue.append(child_node)
+                enqueued_count += 1
+        now = time.monotonic()
+        if (now - last_print_time >= 2.0):
+            last_print_time = now
+            print(f"Current Runtime: {now - start_time:.4f}")
+            print(f"Popped: {popped_count}")
+            print(f"In Queue: {len(search_queue)}")
+            dag_node_count = len(dag_instance.nodes)
+            print(f"DAG Nodes: {dag_node_count}")
+            print(f"Attempted Transitions: {dag_instance.attempted_transitions}")
+            print(f"Accepted Transitions: {dag_instance.accepted_transitions}")
+            print(f"DAG Edges: {dag_instance.edge_count}")
+
+    print("-----------Totals-----------\n")
+    print(f"Runtime: {now - start_time:.4f}")
+    print(f"Popped: {popped_count}")
+    print(f"In Queue: {len(search_queue)}")
+    dag_node_count = len(dag_instance.nodes)
+    print(f"DAG Nodes: {dag_node_count}")
+    print(f"Attempted Transitions: {dag_instance.attempted_transitions}")
+    print(f"Accepted Transitions: {dag_instance.accepted_transitions}")
+    print(f"DAG Edges: {dag_instance.edge_count}")
 
         
 

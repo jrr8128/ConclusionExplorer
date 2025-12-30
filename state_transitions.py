@@ -8,7 +8,7 @@ from ConclusionExplorer.types import State, Statement, Term
 
 def _term_to_mask(semantic_space: SemanticSpace, term: Term) -> int:
     (index, is_complement) = term
-    base_term = semantic_space.regions_where_term_is_true(index)
+    base_term = semantic_space.regions_where_term_is_true[index]
     if is_complement:
         return base_term ^ semantic_space.all_regions_mask
     else:
