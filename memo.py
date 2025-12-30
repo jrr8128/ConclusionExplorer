@@ -14,15 +14,15 @@
 #   mark_expanded(key, depth) -> None
 #   attach_recipe(key, recipe_signature) -> None
 
-from typing import TypeAlias
+
+from ConclusionExplorer.types import CanonicalState, State
 recipe_bucket = dict
 # For each canonical semantic state:
 seen_depth : dict[tuple[int, tuple[int,...]], int] = {} # store smallest number of premises used to reach it
 recipes : dict[tuple[int, tuple[int,...]], recipe_bucket] = {} # store first recipe found (base), every other recipe maps to same state
-CanonicalState: TypeAlias = tuple[int, tuple[int,...]]
-State: TypeAlias = tuple[int, tuple[int,...]]
 
-def _canonicalize_state(state: State) -> CanonicalState:
+
+def canonicalize_state(state: State) -> CanonicalState:
     canoncalized_constraints = tuple(sorted(set(state[1])))
     return (state[0], canoncalized_constraints)
 
@@ -52,7 +52,7 @@ def accept(state: State, depth: int) ->tuple[bool, CanonicalState | None]:
     If True, the state is already recorded at best depth.
     Canonicalizes state = (allowed_regions_mask, existence_constraints_masks).
     """
-    canonical_state = _canonicalize_state(state)
+    canonical_state = canonicalize_state(state)
     if(_should_expand(canonical_state, depth)):
         _mark_expanded(canonical_state, depth)
         return (True, canonical_state)

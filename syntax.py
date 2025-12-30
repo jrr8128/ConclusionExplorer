@@ -2,6 +2,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
+from ConclusionExplorer.types import Statement
+
 
 form_char_to_index = {
     'A': 0, #All S are P
@@ -17,16 +19,14 @@ form_index_to_char ={
     3: 'O'  #Some S are not P
 }
 
-statement = tuple[int, tuple(int,int), tuple(int,int)] #(form_index, (subject_term_index, is_positive), (predicate_term_index, is_positive)
-
 @dataclass(frozen=True)
 class SyntaxSpace:
     term_count: int
     term_index_to_label: tuple[str, ...] # [term_index] -> term label "A","B","C",...
     term_label_to_index: dict[str, int] # term label "A","B","C",... -> term_index
 
-    list_of_statements: tuple[statement, ...]
-    map_statement_to_index: dict[statement, int]
+    list_of_statements: tuple[Statement, ...]
+    map_statement_to_index: dict[Statement, int]
 
     # Generate term labels and mappings for given term count
     # For example: term_count = 3 -> ('A','B','C'), {'A':0,'B':1,'C':2}
@@ -51,20 +51,20 @@ class SyntaxSpace:
     # 1. tuple of all possible statements (form_index, subject_term_index, predicate_term_index) 
     # 2. dict mapping each statement to its index in the tuple ie. {(0,(0,0),(1,0)):0,(0,(0,1),(1,0)):1,...}
     @staticmethod
-    def generate_all_statements(term_count: int) ->tuple[tuple[statement, ...], dict[statement, int]]:
+    def generate_all_statements(term_count: int) ->tuple[tuple[Statement, ...], dict[Statement, int]]:
         statements = []
         statement_map = {}
         statement_index = 0
         for form_index in range(4): # A,E,I,O
             for subject_index in range(term_count): # 0 -> 'A', 1 -> 'B', ...
-                for subject_is_positive in (0,1):
+                for subject_is_complement in (0,1):
                     for predicate_index in range(term_count): # 0 -> 'A', 1 -> 'B', ...
-                        for predicate_is_positive in range(0,1):
-                            if (subject_index, subject_is_positive) == (predicate_index, predicate_is_positive): 
+                        for predicate_is_complement in (0,1):
+                            if (subject_index, subject_is_complement) == (predicate_index, predicate_is_complement): 
                                 continue # skip statements like All S are S (reflexive statements are trivial and assumed)
-                            if(form_index in (1,2)) and (subject_index, subject_is_positive) > (predicate_index, predicate_is_positive):
+                            if(form_index in (1,2)) and (subject_index, subject_is_complement) > (predicate_index, predicate_is_complement):
                                 continue # skip E and I statements not in canonical order to avoid duplicates (No B are A is same as No A are B)
-                            statement = (form_index, (subject_index, subject_is_positive), (predicate_index, predicate_is_positive))
+                            statement = (form_index, (subject_index, subject_is_complement), (predicate_index, predicate_is_complement))
                             statements.append(statement)
                             statement_map[statement] = statement_index
                             statement_index += 1

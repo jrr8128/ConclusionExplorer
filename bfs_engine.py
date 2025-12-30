@@ -20,7 +20,7 @@ def search_tree(root: Node):
         current_node = search_queue.popleft()
         child_nodes : list[Node] = expansion_policy.expand(current_node)
         for child_node in child_nodes:
-            accepted, canonical_state = memo.accept((child_node.allowed_regions_mask, child_node.existence_constraints_masks), child_node.depth)
+            accepted, canonical_state = memo.canonicalize_state((child_node.allowed_regions_mask, child_node.existence_constraints_masks), child_node.depth)
             if(accepted):
                 new_node = Node(canonical_state[0],
                                 canonical_state[1],
