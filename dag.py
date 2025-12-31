@@ -111,8 +111,7 @@ class DAG:
             return None
 
         child_depth = source_depth + 1
-        accepted, canon_child_state = self.memo.accept(child_state, child_depth,  
-                                                       used_base_terms_mask=child_syntactic_masks[1])
+        accepted, canon_child_state = self.memo.accept(child_state, child_depth)
         if not accepted:
             self.rejected_memo += 1
             return None

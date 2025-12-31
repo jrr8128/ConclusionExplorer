@@ -16,6 +16,7 @@
 
 
 from dataclasses import dataclass, field
+from ConclusionExplorer.semantics import SemanticSpace
 from ConclusionExplorer.types import Recipes, RegionRemapsByUsedBaseTermsMask, State
 from itertools import permutations
 import time
@@ -72,6 +73,8 @@ def _normalize_state(state: State) -> State:
 @dataclass
 class Memo:
     term_count: int
+    semantic_space: SemanticSpace
+    _all_regions_mask: int = field(default_factory=int)
     # For each canonical semantic state:
     seen_depth: dict[State, int] = field(default_factory=dict)
     seen_depth_normalized: dict[State, int] = field(default_factory=dict)
@@ -79,9 +82,10 @@ class Memo:
     recipes : Recipes = field(default_factory=dict) # store first recipe found (base), every other recipe maps to same state
     #region_remaps: list[list[int]] = field(init=False)
     region_remaps_by_active_subset: RegionRemapsByUsedBaseTermsMask = field(init=False)
-    
     canonicalization_cache: dict[tuple[State, int], State] = field(default_factory=dict)
-
+    term_true_region_masks: list[int] = field(init=False)
+    region_remaps_cache: dict[int, RegionRemapsByUsedBaseTermsMask] = field(default_factory=dict)
+    
     canonicalize_calls: int = 0
     canonicalize_seconds: float = 0.0
     permutation_trials: int = 0
@@ -92,8 +96,22 @@ class Memo:
     normalized_precheck_rejects: int = 0
     allowed_only_precheck_rejects: int = 0
 
+    def _init_term_region_masks(self) -> None:
+        region_count = 1 << self.term_count
+        self._all_regions_mask = (1 << region_count) - 1
+        self.term_true_region_masks = [0] * self.term_count
+        for term in range(self.term_count):
+            mask = 0
+            for region in range(region_count):
+                if (region >> term) & 1:
+                    mask |= (1 << region)
+            self.term_true_region_masks[term] = mask
 
-    def __post_init__(self):
+    def _init_region_remaps(self) -> None:
+        cached = self.region_remaps_cache.get(self.term_count)
+        if cached is not None:
+            self.region_remaps_by_active_subset = cached
+            return
         self.region_remaps_by_active_subset = {}
         base_term_indices = tuple(range(self.term_count))
         for used_base_terms_mask in range(1 << self.term_count):
@@ -115,20 +133,44 @@ class Memo:
             
             self.region_remaps_by_active_subset[used_base_terms_mask] = remaps_for_subset
 
-    def canonicalize_state(self, state: State, used_base_terms_mask: int) -> State:
+    def __post_init__(self):
+        self._init_term_region_masks()
+        self._init_region_remaps()
+
+
+
+    def _compute_active_terms_mask(self, normalized_state: State) -> int:
+        allowed_mask, constraints = normalized_state
+        mask = 0
+        for term in range(self.term_count):
+            term_true = self.term_true_region_masks[term]
+            term_false = self._all_regions_mask ^ term_true
+            a1 = allowed_mask & term_true
+            a0 = allowed_mask & term_false
+            if a1 and a0:
+                mask |= (1 << term)
+                continue
+            for constraint in constraints:
+                if (constraint & term_true) and (constraint & term_false):
+                    mask |= (1 << term)
+                    break
+        return mask
+
+    def canonicalize_state(self, state: State) -> State:
         start_time = time.perf_counter()
         self.canonicalize_calls += 1
 
         normalized_allowed_regions_mask, normalized_constraints = state
         normalized_state: State = (normalized_allowed_regions_mask, normalized_constraints)
-        cache_key = (normalized_state, used_base_terms_mask)
-        cached = self.canonicalization_cache.get(cache_key)
+        cached = self.canonicalization_cache.get(normalized_state)
         if cached is not None:
             self.canonicalized_cache_hits += 1
             return cached
         self.canonicalize_cache_misses += 1
 
-        region_remaps = self.region_remaps_by_active_subset[used_base_terms_mask]
+        active_terms_mask = self._compute_active_terms_mask(normalized_state)
+
+        region_remaps = self.region_remaps_by_active_subset[active_terms_mask]
         self.permutation_trials += len(region_remaps)
         best_canonical_state: State | None = None
 
@@ -155,7 +197,7 @@ class Memo:
         assert best_canonical_state is not None
         normalized_best_canonical_state = _normalize_state(best_canonical_state)
         self.canonicalize_seconds += (time.perf_counter() - start_time)
-        self.canonicalization_cache[cache_key] = normalized_best_canonical_state
+        self.canonicalization_cache[normalized_state] = normalized_best_canonical_state
         return normalized_best_canonical_state
 
           
@@ -180,7 +222,7 @@ class Memo:
         else:
             self.recipes[canonical_state]["variants"].append(recipe_signature)
 
-    def accept(self, state: State, depth: int,  used_base_terms_mask: int) ->tuple[bool, State | None]:
+    def accept(self, state: State, depth: int) ->tuple[bool, State | None]:
         """
         Returns (accepted, canonical_state); canonical_state is non-None iff accepted.
         If True, the state is already recorded at best depth.
@@ -188,13 +230,14 @@ class Memo:
         """
         self.accept_calls += 1
         normalized_state = _normalize_state(state)
+
         previous_normalized_best_state = self.seen_depth_normalized.get(normalized_state)
         if previous_normalized_best_state is not None and depth >= previous_normalized_best_state:
             self.normalized_precheck_rejects += 1
             return (False, None)
         
-        canonical_state = self.canonicalize_state(normalized_state, used_base_terms_mask)
-        
+        canonical_state = self.canonicalize_state(normalized_state)
+
         if(self._should_expand(canonical_state, depth)):
             self.accepted_calls += 1
             self._mark_expanded(canonical_state, depth)

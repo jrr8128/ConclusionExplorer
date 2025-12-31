@@ -10,12 +10,12 @@ import os
 
 def main():
 
-    term_count = 4
+    term_count = 3
 
     syntax_space = syntax.SyntaxSpace.build_syntax_space(term_count)
     semantic_space = semantics.SemanticSpace.build_semantic_space(term_count)
 
-    memo_instance = memo.Memo(term_count=term_count)
+    memo_instance = memo.Memo(term_count=term_count, semantic_space=semantic_space)
     dag_instance = DAG(
             nodes={},
             syntax_space=syntax_space,
@@ -24,7 +24,7 @@ def main():
             )
 
     root_state = (semantic_space.all_regions_mask, tuple())
-    accepted, canonical_root_state = memo_instance.accept(root_state, depth=0, used_base_terms_mask=0)
+    accepted, canonical_root_state = memo_instance.accept(root_state, depth=0)
     assert accepted
 
     root_node = Node(
