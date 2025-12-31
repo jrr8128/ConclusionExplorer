@@ -1,11 +1,18 @@
 
 from dataclasses import dataclass, field
 from typing import TypeAlias
-from ConclusionExplorer import conclusions, memo, state_transitions
+from ConclusionExplorer import conclusions, expansion_filters, memo, state_transitions
 from ConclusionExplorer.node import Node
 from ConclusionExplorer.semantics import SemanticSpace
 from ConclusionExplorer.syntax import SyntaxSpace
 from ConclusionExplorer.types import State, Statement
+
+@dataclass(frozen=True)
+class TransitionResult:
+    child_state: State
+    pair_status_mask: int
+    used_base_terms_mask: int
+    empty_base_terms_mask: int
 
 @dataclass(frozen=True)
 class Edge:
@@ -30,6 +37,12 @@ class DAG:
     attempted_transitions = 0
     accepted_transitions = 0
     edge_count = 0
+    rejected_syntactic = 0
+    rejected_semantic_inconsistent = 0 #state becomes none
+    rejected_semantic_emptycap = 0 # reached max empty terms
+    rejected_memo = 0 
+    no_change = 0
+    inconsistent_state = 0
 
     def get_or_create_DAG_node(self, state: State, depth: int) -> DAGNode:
         if state not in self.nodes:
@@ -49,12 +62,22 @@ class DAG:
     def expand(self, node: Node):
         for i in range(node.last_index + 1, len(self.syntax_space.list_of_statements)):
             statement = self.syntax_space.list_of_statements[i]
-            new_state, changed = self.add_transition((node.allowed_regions_mask, node.existence_constraints_masks), statement, node.depth)
+            transition_result = self.add_transition(node, statement)
             self.attempted_transitions += 1
-            if new_state is not None and changed:
-                child_node = Node(new_state[0], new_state[1], node.depth + 1, i)
-                self.accepted_transitions += 1
-                yield child_node
+            if transition_result is None:
+                continue
+            child_allowed_regions_mask, child_existence_constraints_mask = transition_result.child_state
+            child_node = Node(
+                            allowed_regions_mask=child_allowed_regions_mask,
+                            existence_constraints_masks=child_existence_constraints_mask, 
+                            depth=node.depth + 1,
+                            last_index=i,
+                            pair_status_mask=transition_result.pair_status_mask,
+                            used_base_terms_mask=transition_result.used_base_terms_mask,
+                            empty_base_terms_mask=transition_result.empty_base_terms_mask
+                            )
+            self.accepted_transitions += 1
+            yield child_node
 
     def populate_all_conclusions(self):
         for dag_node in self.nodes.values():
@@ -62,36 +85,56 @@ class DAG:
                 dag_node.conclusions = conclusions.compute_conclusions(dag_node.state, self.syntax_space, self.semantic_space)
 
 
-    def add_transition(self, source_state: State, statement: Statement, source_depth: int
-                    ) -> tuple[State | None, bool]:
-        canon_source_state = memo.canonicalize_state(source_state)
-        self.get_or_create_DAG_node(canon_source_state, source_depth)
+    def add_transition(self, source_node: Node, statement: Statement
+                    ) -> TransitionResult | None:
+        source_state = (source_node.allowed_regions_mask, source_node.existence_constraints_masks)
+        source_depth = source_node.depth
+        child_syntactic_masks = expansion_filters.check_syntactic(self.memo.term_count, source_node, statement)
+        if child_syntactic_masks is None:  
+            self.rejected_syntactic += 1
+            return None
+        self.get_or_create_DAG_node(source_state, source_depth)
         
-        child_state, changed = state_transitions.apply_statement(self.semantic_space, canon_source_state, statement, "expand")
+        child_state, changed = state_transitions.apply_statement(self.semantic_space, source_state, statement, "expand")
         if child_state is None:
-            return (None, False)
+            self.inconsistent_state += 1
+            return None
         if not changed:
-            return (None, False)
+            self.no_change += 1
+            return None
 
-        
+        child_empty_terms_mask = expansion_filters.post_semantic_checks(self.memo.term_count, self.semantic_space, 
+                                                                        source_node.empty_base_terms_mask, child_state, 
+                                                                        child_syntactic_masks[1], max(1, self.memo.term_count - 2))
+        if child_empty_terms_mask is None:
+            self.rejected_semantic_emptycap += 1
+            return None
+
         child_depth = source_depth + 1
-        accepted, canon_child_state = self.memo.accept(child_state, child_depth)
+        accepted, canon_child_state = self.memo.accept(child_state, child_depth,  
+                                                       used_base_terms_mask=child_syntactic_masks[1])
         if not accepted:
-            return (None, False)
+            self.rejected_memo += 1
+            return None
+        
+        transition_result = TransitionResult(
+                                            child_state=canon_child_state,
+                                            pair_status_mask=child_syntactic_masks[0],
+                                            used_base_terms_mask=child_syntactic_masks[1],
+                                            empty_base_terms_mask=child_empty_terms_mask
+                                            )
+
         self.get_or_create_DAG_node(canon_child_state, child_depth)
         
-        new_edge = Edge(source_state=canon_source_state, 
+        new_edge = Edge(source_state=source_state, 
                         destination_state=canon_child_state,
                         statement= statement
                         )
-        if new_edge in self.nodes[canon_source_state].out_edges:
-            return (canon_child_state, changed)
-        else:
+        
+        if new_edge not in self.nodes[source_state].out_edges:
             self.edge_count += 1
-            self.nodes[canon_source_state].out_edges.add(new_edge)
+            self.nodes[source_state].out_edges.add(new_edge)
             self.nodes[canon_child_state].in_edges.add(new_edge)
-            return (canon_child_state, changed)
-
-
+        return transition_result
 
 
