@@ -13,6 +13,7 @@ class TransitionResult:
     pair_status_mask: int
     used_base_terms_mask: int
     empty_base_terms_mask: int
+    universal_polarity_mask: int
 
 @dataclass(frozen=True)
 class Edge:
@@ -34,6 +35,7 @@ class DAG:
     semantic_space: SemanticSpace
     memo: memo.Memo
     nodes: dict[State, DAGNode] = (field(default_factory=dict))
+    
     attempted_transitions = 0
     accepted_transitions = 0
     edge_count = 0
@@ -62,7 +64,8 @@ class DAG:
     def expand(self, node: Node):
         for i in range(node.last_index + 1, len(self.syntax_space.list_of_statements)):
             statement = self.syntax_space.list_of_statements[i]
-            transition_result = self.add_transition(node, statement)
+            child_recipe_sig = node.recipe_signature + (i,)
+            transition_result = self.add_transition(node, statement, child_recipe_sig)
             self.attempted_transitions += 1
             if transition_result is None:
                 continue
@@ -74,7 +77,9 @@ class DAG:
                             last_index=i,
                             pair_status_mask=transition_result.pair_status_mask,
                             used_base_terms_mask=transition_result.used_base_terms_mask,
-                            empty_base_terms_mask=transition_result.empty_base_terms_mask
+                            empty_base_terms_mask=transition_result.empty_base_terms_mask,
+                            recipe_signature=child_recipe_sig,
+                            universal_polarity_mask=transition_result.universal_polarity_mask,
                             )
             self.accepted_transitions += 1
             yield child_node
@@ -85,7 +90,7 @@ class DAG:
                 dag_node.conclusions = conclusions.compute_conclusions(dag_node.state, self.syntax_space, self.semantic_space)
 
 
-    def add_transition(self, source_node: Node, statement: Statement
+    def add_transition(self, source_node: Node, statement: Statement, child_recipe_signature: tuple[int,...]
                     ) -> TransitionResult | None:
         source_state = (source_node.allowed_regions_mask, source_node.existence_constraints_masks)
         source_depth = source_node.depth
@@ -110,19 +115,24 @@ class DAG:
             self.rejected_semantic_emptycap += 1
             return None
 
+  
         child_depth = source_depth + 1
-        accepted, canon_child_state = self.memo.accept(child_state, child_depth)
-        if not accepted:
+        accepted, canon_child_state = self.memo.accept(child_state, child_depth, child_recipe_signature)
+        if accepted == memo.AcceptKind.REJECT:
             self.rejected_memo += 1
             return None
+      
+        if accepted == memo.AcceptKind.TIE:
+          return None
         
         transition_result = TransitionResult(
                                             child_state=canon_child_state,
                                             pair_status_mask=child_syntactic_masks[0],
                                             used_base_terms_mask=child_syntactic_masks[1],
-                                            empty_base_terms_mask=child_empty_terms_mask
+                                            universal_polarity_mask=child_syntactic_masks[2],
+                                            empty_base_terms_mask=child_empty_terms_mask                                    
                                             )
-
+        
         self.get_or_create_DAG_node(canon_child_state, child_depth)
         
         new_edge = Edge(source_state=source_state, 

@@ -8,7 +8,7 @@
 #   memo.accept(state, depth) -> (accepted, canonical_state)
 
 import collections
-from dataclasses import dataclass
+#from dataclasses import dataclass
 import time
 from ConclusionExplorer import dag, memo
 from ConclusionExplorer.node import Node

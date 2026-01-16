@@ -1,0 +1,12 @@
+Checks: >-
+  -*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  modernize-*,
+  -bugprone-exception-escape,
+  -modernize-use-trailing-return-type
+HeaderFilterRegex: '^$'
+FormatStyle: file
+SystemHeaders: false
+

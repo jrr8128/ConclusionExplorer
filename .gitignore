@@ -1,0 +1,40 @@
+.vscode/
+.vs/
+*.out
+
+build/
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.log
+*.tlog
+*.idb
+*.o
+*.a
+*.so
+*.dylib
+
+# CMake 
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+Makefile
+compile_commands.json
+
+# local logs
+debug.txt
+instruction.md
+
+# LLVM profiling
+*.profraw
+*.profdata
+*.d
+*.tmp
+
+# Coverage artifacts you generate
+**/coverage_report.txt
+**/coverage_report*.txt
+**/coverage/

@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from ConclusionExplorer.semantics import SemanticSpace
 from ConclusionExplorer.types import Recipes, RegionRemapsByUsedBaseTermsMask, State
 from itertools import permutations
+from enum import Enum, auto
 import time
 
 def _region_remap_permutation(term_count: int, permutation: tuple[int,...]) -> list[int]:
@@ -69,6 +70,11 @@ def _normalize_state(state: State) -> State:
     
     canonical_constraints = tuple(sorted(set(kept_constraints)))
     return (allowed_regions_mask, canonical_constraints)
+
+class AcceptKind(Enum):
+    REJECT = auto()
+    NEW_BEST = auto()
+    TIE = auto()
 
 @dataclass
 class Memo:
@@ -213,16 +219,21 @@ class Memo:
         if state not in self.seen_depth or depth < self.seen_depth[state]:
             self.seen_depth[state] = depth
 
-    def _attach_recipe(self, canonical_state: State, recipe_signature):
-        if canonical_state not in self.recipes:
+    def _attach_recipe(self, canonical_state: State, recipe_signature: tuple[int,...]):
+        bucket = self.recipes.get(canonical_state)
+        if bucket is None:
             self.recipes[canonical_state] = {
-                "base": recipe_signature,
-                "variants": list[recipe_signature]
+                "variants": [recipe_signature],
+                "variant_set": {recipe_signature},
+                "conclusion": None,
             }
-        else:
-            self.recipes[canonical_state]["variants"].append(recipe_signature)
+            return
+        if recipe_signature in bucket["variant_set"]:
+            return
+        bucket["variant_set"].add(recipe_signature)
+        bucket["variants"].append(recipe_signature)
 
-    def accept(self, state: State, depth: int) ->tuple[bool, State | None]:
+    def accept(self, state: State, depth: int, recipe_signature) ->tuple[AcceptKind, State | None]:
         """
         Returns (accepted, canonical_state); canonical_state is non-None iff accepted.
         If True, the state is already recorded at best depth.
@@ -232,16 +243,17 @@ class Memo:
         normalized_state = _normalize_state(state)
 
         previous_normalized_best_state = self.seen_depth_normalized.get(normalized_state)
-        if previous_normalized_best_state is not None and depth >= previous_normalized_best_state:
+        if previous_normalized_best_state is not None and depth > previous_normalized_best_state:
             self.normalized_precheck_rejects += 1
-            return (False, None)
+            return (AcceptKind.REJECT, None)
+
         
         canonical_state = self.canonicalize_state(normalized_state)
 
-        if(self._should_expand(canonical_state, depth)):
-            self.accepted_calls += 1
+        self._attach_recipe(canonical_state, recipe_signature)
+        if previous_normalized_best_state is None or depth < previous_normalized_best_state:
+            self.seen_depth_normalized[normalized_state] = depth
             self._mark_expanded(canonical_state, depth)
-            if previous_normalized_best_state is None or depth < previous_normalized_best_state:
-                self.seen_depth_normalized[normalized_state] = depth
-            return (True, canonical_state)
-        return (False, None)
+            return (AcceptKind.NEW_BEST, canonical_state)
+
+        return (AcceptKind.TIE, canonical_state)
