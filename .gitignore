@@ -2,39 +2,39 @@
 .vs/
 *.out
 
-build/
-*.obj
-*.exe
-*.pdb
-*.ilk
-*.log
-*.tlog
-*.idb
-*.o
-*.a
-*.so
-*.dylib
+cpp/build/
+cpp/**/*.obj
+cpp/**/*.exe
+cpp/**/*.pdb
+cpp/**/*.ilk
+cpp/**/*.log
+cpp/**/*.tlog
+cpp/**/*.idb
+cpp/**/*.o
+cpp/**/*.a
+cpp/**/*.so
+cpp/**/*.dylib
 
 # CMake 
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-CTestTestfile.cmake
-Testing/
-Makefile
-compile_commands.json
+cpp/**/CMakeFiles/
+cpp/**/CMakeCache.txt
+cpp/**/cmake_install.cmake
+cpp/**/CTestTestfile.cmake
+cpp/**/Testing/
+cpp/**/Makefile
+cpp/**/compile_commands.json
 
 # local logs
-debug.txt
-instruction.md
+cpp/**/debug.txt
+cpp/**/instruction.md
 
 # LLVM profiling
-*.profraw
-*.profdata
-*.d
-*.tmp
+cpp/**/*.profraw
+cpp/**/*.profdata
+cpp/**/*.d
+cpp/**/*.tmp
 
 # Coverage artifacts you generate
-**/coverage_report.txt
-**/coverage_report*.txt
-**/coverage/
+cpp/**/**/coverage_report.txt
+cpp/**/**/coverage_report*.txt
+cpp/**/**/coverage/
