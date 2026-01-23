@@ -14,6 +14,7 @@ enum class form : std::uint8_t { A = 0, E = 1, I = 2, O = 3 };
 struct term_literal {
   std::uint8_t term;
   bool is_complement;
+  auto operator<=>(const term_literal&) const = default;
 };
 
 // example  A, (A,0), (B,0) -> All A are B
@@ -51,10 +52,6 @@ struct class_id {
 
 // Need to be able to reference all statements
 using all_statements = std::vector<statement>;
-
-// But only search through tailored id's (avoiding redundant/degenerate/etc
-// statements)
-using search_statement_ids = std::vector<statement_id>;
 
 // Some statements generated will be logically equivalent to others,
 // put these into buckets/equivalence classes
