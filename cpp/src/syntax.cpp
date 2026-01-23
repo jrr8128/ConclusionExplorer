@@ -120,6 +120,23 @@ static statement canonical_equiv_statement(const statement& stmt) {
   return canon_stmt;
 }
 
+// Look up (or create) the dense equivalence-class id for a canonicalized
+// statement.
+//
+// Inputs:
+// - canon: canonical equivalence-key (E/I-only + ordered literals)
+// - class_id_by_canon: build-time map from canonical key -> class_id
+// - syn_space.rep_id_by_class_id: used for allocating the next class_id (size
+// == #classes)
+// - sid: statement_id of the just-generated statement (candidate
+// representative)
+//
+// Behavior:
+// - If canon is new: assign class_id = current rep_id_by_class_id.size(), store
+// mapping,
+//   and record sid as the representative for that class.
+// - If canon exists: reuse the existing class_id.
+// - Returns the class_id for canon.
 static class_id get_or_create_class_id(
     const statement& canon,
     std::unordered_map<statement, class_id, statement_hash>& class_id_by_canon,
@@ -186,9 +203,14 @@ static void build_statements(syntax_space& syn_space) {
 
             statement canon_statement = canonical_equiv_statement(stmt);
 
+            // statement_id of the just-appended statement (index into
+            // all_statements).
             const statement_id sid{static_cast<std::uint16_t>(
                 syn_space.all_statements.size() - 1)};
 
+            // Dense equivalence class assignment; first-seen statement becomes
+            // the representative. Dense class ids: class ids are
+            // 0..(num_classes-1) with no gaps.
             const class_id cid = get_or_create_class_id(
                 canon_statement, class_id_by_canon, syn_space, sid);
 
