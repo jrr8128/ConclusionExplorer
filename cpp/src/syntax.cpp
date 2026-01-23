@@ -225,6 +225,7 @@ static void build_statements(syntax_space& syn_space) {
 }
 
 syntax_space build_syntax_space(const std::uint8_t term_count) {
+  // DEBUG
   assert(term_count > 2 && term_count <= 8);
   syntax_space syn_space{};
   syn_space.term_count = term_count;
