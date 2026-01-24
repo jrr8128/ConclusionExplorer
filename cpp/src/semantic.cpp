@@ -6,6 +6,15 @@
 
 namespace conclusion_explorer {
 
+bool is_empty(const region_mask& mask, uint8_t active_words) {
+  for (uint8_t index = 0; index < active_words; index++) {
+    if (mask.w[index] != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 region_mask build_all_region_mask(const std::uint16_t region_count) {
   // Construct the “universe” mask for this run: bits [0, region_count) set,
   // others clear.

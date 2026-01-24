@@ -63,6 +63,7 @@ struct semantic_space {
   std::vector<region_mask> required_nonempty_by_statement;
 };
 
+bool is_empty(const region_mask& mask, uint8_t active_words);
 region_mask build_all_region_mask(std::uint16_t region_count);
 void build_term_region_masks(const syntax_space& syn_space,
                              semantic_space& sem_space);
