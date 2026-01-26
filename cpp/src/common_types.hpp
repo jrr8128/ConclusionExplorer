@@ -22,6 +22,7 @@ struct statement {
   form f;
   term_literal subject;
   term_literal predicate;
+  friend bool operator==(const statement&, const statement&) = default;
 };
 
 // Strong typedef over uint16_t to prevent mixing IDs (statement vs premise vs
@@ -34,13 +35,6 @@ struct statement_id {
                                    statement_id) noexcept = default;
   friend constexpr std::strong_ordering operator<=>(
       statement_id, statement_id) noexcept = default;
-};
-
-struct premise_id {
-  std::uint16_t id = std::numeric_limits<std::uint16_t>::max();
-  friend constexpr bool operator==(premise_id, premise_id) noexcept = default;
-  friend constexpr std::strong_ordering operator<=>(
-      premise_id, premise_id) noexcept = default;
 };
 
 struct class_id {
