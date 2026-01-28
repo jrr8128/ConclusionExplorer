@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <unordered_set>
 
 #include "canonicalizer.hpp"
 #include "common_types.hpp"
@@ -10,7 +10,6 @@ namespace conclusion_explorer {
 
 struct memo_key {
   canonical_key c_key;
-  uint16_t next_min_id = 0;
   bool operator==(const memo_key&) const = default;
 };
 
@@ -20,11 +19,11 @@ struct memo_key_hash {
 
 struct memo {
   const canon& c;
-  std::unordered_map<memo_key, uint8_t, memo_key_hash> seen;
-  bool should_prune(const semantic_state&, uint16_t next_min_id,
-                    uint8_t depth_left, const semantic_space&) const;
-  void record_seen(const semantic_state&, uint16_t next_min_id,
-                   uint8_t depth_left, const semantic_space&);
+  std::unordered_set<memo_key, memo_key_hash> dead;
+  bool is_dead(const semantic_state&, const syntax_space&,
+               const semantic_space&) const;
+  void record_dead(const semantic_state&, const syntax_space&,
+                   const semantic_space&);
 };
 
 }  // namespace conclusion_explorer

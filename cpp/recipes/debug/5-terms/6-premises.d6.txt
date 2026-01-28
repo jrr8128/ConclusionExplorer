@@ -1,0 +1,135 @@
+#133:  0 2 9 11 16 76 -> 63
+1. No A are B
+2. No A are C
+3. No ¬A are ¬B
+4. No ¬A are ¬C
+5. No B are C
+6. Some D are E
+C: Some ¬B are ¬C
+
+#134:  0 2 9 11 16 77 -> 63
+1. No A are B
+2. No A are C
+3. No ¬A are ¬B
+4. No ¬A are ¬C
+5. No B are C
+6. Some D are ¬E
+C: Some ¬B are ¬C
+
+#135:  0 2 9 11 16 79 -> 63
+1. No A are B
+2. No A are C
+3. No ¬A are ¬B
+4. No ¬A are ¬C
+5. No B are C
+6. Some ¬D are ¬E
+C: Some ¬B are ¬C
+
+#136:  0 2 9 11 23 76 -> 56
+1. No A are B
+2. No A are C
+3. No ¬A are ¬B
+4. No ¬A are ¬C
+5. No ¬B are ¬C
+6. Some D are E
+C: Some B are C
+
+#137:  0 2 9 11 23 77 -> 56
+1. No A are B
+2. No A are C
+3. No ¬A are ¬B
+4. No ¬A are ¬C
+5. No ¬B are ¬C
+6. Some D are ¬E
+C: Some B are C
+
+#138:  0 2 9 11 23 79 -> 56
+1. No A are B
+2. No A are C
+3. No ¬A are ¬B
+4. No ¬A are ¬C
+5. No ¬B are ¬C
+6. Some ¬D are ¬E
+C: Some B are C
+
+#139:  0 3 9 10 17 76 -> 62
+1. No A are B
+2. No A are ¬C
+3. No ¬A are ¬B
+4. No ¬A are C
+5. No B are ¬C
+6. Some D are E
+C: Some ¬B are C
+
+#140:  0 3 9 10 17 77 -> 62
+1. No A are B
+2. No A are ¬C
+3. No ¬A are ¬B
+4. No ¬A are C
+5. No B are ¬C
+6. Some D are ¬E
+C: Some ¬B are C
+
+#141:  0 3 9 10 17 79 -> 62
+1. No A are B
+2. No A are ¬C
+3. No ¬A are ¬B
+4. No ¬A are C
+5. No B are ¬C
+6. Some ¬D are ¬E
+C: Some ¬B are C
+
+#142:  0 3 10 17 22 76 -> 49
+1. No A are B
+2. No A are ¬C
+3. No ¬A are C
+4. No B are ¬C
+5. No ¬B are C
+6. Some D are E
+C: Some ¬A are ¬B
+
+#143:  0 3 10 17 22 77 -> 49
+1. No A are B
+2. No A are ¬C
+3. No ¬A are C
+4. No B are ¬C
+5. No ¬B are C
+6. Some D are ¬E
+C: Some ¬A are ¬B
+
+#144:  0 3 10 17 22 79 -> 49
+1. No A are B
+2. No A are ¬C
+3. No ¬A are C
+4. No B are ¬C
+5. No ¬B are C
+6. Some ¬D are ¬E
+C: Some ¬A are ¬B
+
+#145:  1 3 8 10 23 76 -> 56
+1. No A are ¬B
+2. No A are ¬C
+3. No ¬A are B
+4. No ¬A are C
+5. No ¬B are ¬C
+6. Some D are E
+C: Some B are C
+
+#146:  1 3 8 10 23 77 -> 56
+1. No A are ¬B
+2. No A are ¬C
+3. No ¬A are B
+4. No ¬A are C
+5. No ¬B are ¬C
+6. Some D are ¬E
+C: Some B are C
+
+#147:  1 3 8 10 23 79 -> 56
+1. No A are ¬B
+2. No A are ¬C
+3. No ¬A are B
+4. No ¬A are C
+5. No ¬B are ¬C
+6. Some ¬D are ¬E
+C: Some B are C
+

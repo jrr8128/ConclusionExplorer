@@ -6,17 +6,17 @@
 #include "canonicalizer.hpp"
 #include "common_types.hpp"
 #include "memo.hpp"
+#include "profiler.hpp"
 #include "prune_rules.hpp"
 #include "puzzle_collector.hpp"
 #include "semantic.hpp"
 #include "semantic_state.hpp"
+#include "syntax.hpp"
 
 namespace conclusion_explorer {
 
-struct search_result {};
-
-void run_iddfs(const semantic_space& sem_space, semantic_state root,
-               uint16_t premise_count, uint8_t max_depth, prune_rules&, memo&,
-               canon*, collector&);
+void run_iddfs(const semantic_space&, const syntax_space&, const prune_rules&,
+               memo&, semantic_state, premise_path&, uint8_t max_depth,
+               collector&, profiler&);
 
 }  // namespace conclusion_explorer

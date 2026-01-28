@@ -1,0 +1,26 @@
+elapsed 10.179s
+term_count 4
+max_depth 16
+
+[totals]
+nodes_considered 1219531
+conflicts_pruned 286087
+inconsistent_pruned 44400
+memo_pruned 54756
+should_expand_pruned 4324
+leaf_reached 696782
+leaf_missing coverage 22128
+non-unique interesting conc 674078
+leaf taste banned 0
+solutions_emitted 576
+max_stack_depth_observed 5
+
+[by_limit]
+3 nodes 16356 leaves 13136 solutions 576
+4 nodes 164198 leaves 108230 solutions 0
+5 nodes 1038977 leaves 575416 solutions 0
+
+[by_k]
+3 leaves 13136 solutions 576
+4 leaves 108230 solutions 0
+5 leaves 575416 solutions 0

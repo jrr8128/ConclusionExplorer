@@ -1,24 +1,16 @@
 
 #include "syntax.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <unordered_map>
 #include <utility>
 
+#include "isomorphism.hpp"
+
 namespace conclusion_explorer {
 
-struct statement_hash {
-  std::size_t operator()(const statement& x) const noexcept {
-    std::size_t h = static_cast<std::size_t>(x.f);
-    h = h * 37 + x.subject.term;
-    h = h * 37 + static_cast<std::size_t>(x.subject.is_complement);
-    h = h * 37 + x.predicate.term;
-    h = h * 37 + static_cast<std::size_t>(x.predicate.is_complement);
-    return h;
-  }
-};
-
-static statement canonical_equiv_statement(const statement& stmt) {
+statement syntax_space::canonical_equiv_statement(const statement& stmt) const {
   statement canon_stmt;
 
   if (stmt.f == form::A || stmt.f == form::O) {
@@ -47,9 +39,9 @@ static class_id get_or_create_class_id(
     const statement& canon,
     std::unordered_map<statement, class_id, statement_hash>& class_id_by_canon,
     syntax_space& syn_space, statement_id sid) {
-  auto [it, inserted] = class_id_by_canon.emplace(
-      canon, class_id{static_cast<std::uint16_t>(
-                 syn_space.rep_id_by_class_id.size())});
+  const uint16_t next_id =
+      static_cast<std::uint16_t>(syn_space.rep_id_by_class_id.size());
+  auto [it, inserted] = class_id_by_canon.emplace(canon, class_id{next_id});
   if (inserted) syn_space.rep_id_by_class_id.push_back(sid);
   return it->second;
 }
@@ -83,7 +75,8 @@ static void build_statements(syntax_space& syn_space) {
             statement stmt{form_type, subject_literal, predicate_literal};
             syn_space.all_statements.push_back(stmt);
 
-            statement canon_statement = canonical_equiv_statement(stmt);
+            statement canon_statement =
+                syn_space.canonical_equiv_statement(stmt);
 
             const statement_id sid{static_cast<std::uint16_t>(
                 syn_space.all_statements.size() - 1)};
@@ -110,6 +103,17 @@ static void build_rep_statement_by_class_id(syntax_space& syn_space) {
   }
 }
 
+static void build_class_id_by_rep_stmt(syntax_space& syn_space) {
+  syn_space.class_id_by_rep_stmt.clear();
+  syn_space.class_id_by_rep_stmt.reserve(
+      syn_space.rep_statement_by_class_id.size());
+  for (class_id cid{0}; cid.id < syn_space.rep_statement_by_class_id.size();
+       cid.id++) {
+    syn_space.class_id_by_rep_stmt.emplace(
+        syn_space.rep_statement_by_class_id[cid.id], cid);
+  }
+}
+
 syntax_space build_syntax_space(const std::uint8_t term_count) {
   // DEBUG
   assert(term_count > 2 && term_count <= 8);
@@ -117,6 +121,10 @@ syntax_space build_syntax_space(const std::uint8_t term_count) {
   syn_space.term_count = term_count;
   build_statements(syn_space);
   build_rep_statement_by_class_id(syn_space);
+  build_class_id_by_rep_stmt(syn_space);
+  precompute_build_perms(syn_space);
+  precompute_build_permuted_cid(syn_space);
+  precompute_build_permuted_word_mask(syn_space);
 
   // DEBUG
   assert(syn_space.class_id_by_statement_id.size() ==

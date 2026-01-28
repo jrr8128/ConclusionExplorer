@@ -5,9 +5,11 @@
 
 #include "common_types.hpp"
 #include "semantic.hpp"
-#include "semantic_state.hpp"
 
 namespace conclusion_explorer {
+struct semantic_state;
+struct syntax_space;
+
 struct canonical_key {
   region_mask empty;
   std::array<uint64_t, MAX_REQ_WORDS> req_bits{};
@@ -16,6 +18,21 @@ struct canonical_key {
 };
 
 struct canon {
-  canonical_key make_key(const semantic_state&, const semantic_space&) const;
+  canonical_key make_iso_key(const semantic_state&, const syntax_space&,
+                             const semantic_space&) const;
 };
+
+void canon_premise_set_key(cid_list_key&, const std::vector<class_id>& premises,
+                           const syntax_space&,
+                           std::vector<std::uint16_t>& tmp_ids);
+
+void canon_recipe_key(cid_list_key& out, const class_id conclusion,
+                      const std::vector<class_id>& premises,
+                      const syntax_space&, std::vector<std::uint16_t>& tmp_ids);
+
+void canon_premise_set_bitset_key(premise_bitset_key& out_best,
+                                  const std::vector<class_id>& premises,
+                                  const syntax_space&,
+                                  std::uint16_t class_words,
+                                  premise_bitset_key& tmp);
 }  // namespace conclusion_explorer

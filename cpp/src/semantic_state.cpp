@@ -2,7 +2,98 @@
 
 #include <assert.h>
 
+#include <iostream>
+
+#include "canonicalizer.hpp"
+#include "profiler.hpp"
+#include "semantic.hpp"
+#include "syntax.hpp"
+
 namespace conclusion_explorer {
+
+static bool get_region_bit(const region_mask& mask, std::uint16_t idx) {
+  const std::uint16_t word = idx >> 6;
+  const std::uint16_t bit = idx & 63;
+  return (mask.w[word] >> bit) & 1ull;
+}
+
+static void set_region_bit(region_mask& mask, std::uint16_t idx) {
+  const std::uint16_t word = idx >> 6;
+  const std::uint16_t bit = idx & 63;
+  mask.w[word] |= (1ull << bit);
+}
+
+static region_mask permute_empty_mask(const region_mask& in_empty,
+                                      std::size_t perm_i,
+                                      const semantic_space& sem_space) {
+  region_mask output{};
+  const std::uint16_t region_count = sem_space.region_count;
+
+  for (std::uint16_t region = 0; region < region_count; ++region) {
+    if (!get_region_bit(in_empty, region)) {
+      continue;
+    }
+
+    const std::uint16_t region2 =
+        sem_space
+            .permuted_region_index_by_perm_and_region[perm_i * region_count +
+                                                      region];
+    set_region_bit(output, region2);
+  }
+  return output;
+}
+
+static void set_req_bit(std::array<std::uint64_t, MAX_REQ_WORDS>& bits,
+                        std::uint16_t req) {
+  const std::uint16_t word = req >> 6;
+  const std::uint16_t bit = req & 63;
+  bits[word] |= (1ull << bit);
+}
+
+static std::array<std::uint64_t, MAX_REQ_WORDS> permute_req_bits(
+    const std::array<std::uint64_t, MAX_REQ_WORDS>& input, std::size_t perm_i,
+    const semantic_space& sem_space) {
+  std::array<std::uint64_t, MAX_REQ_WORDS> output{};
+  const std::uint16_t req_count = sem_space.req_count;
+
+  for (std::uint16_t word = 0; word < sem_space.req_words; ++word) {
+    for (std::uint64_t bits = input[word]; bits; bits &= (bits - 1)) {
+      const std::uint16_t req =
+          static_cast<std::uint16_t>(word * 64 + __builtin_ctzll(bits));
+      if (req >= req_count) {
+        continue;
+      }
+      const std::uint16_t req2 =
+          sem_space
+              .permuted_req_index_by_perm_and_req[perm_i * req_count + req];
+      set_req_bit(output, req2);
+    }
+  }
+  return output;
+}
+
+static std::uint8_t permute_base_terms_mask(std::uint8_t mask,
+                                            const term_perm& perm,
+                                            std::uint8_t term_count) {
+  std::uint8_t output = 0;
+  for (std::uint8_t term = 0; term < term_count; ++term) {
+    if (mask & static_cast<std::uint8_t>(1u << term)) {
+      output |= static_cast<std::uint8_t>(1u << perm.p[term]);
+    }
+  }
+  return output;
+}
+
+semantic_state permuted_state(const semantic_state& state, std::size_t perm_i,
+                              const syntax_space& syn_space,
+                              const semantic_space& sem_space) {
+  semantic_state output{};
+  output.base_terms_mask = permute_base_terms_mask(
+      state.base_terms_mask, syn_space.perms[perm_i], syn_space.term_count);
+  output.empty = permute_empty_mask(state.empty, perm_i, sem_space);
+  output.req_bits = permute_req_bits(state.req_bits, perm_i, sem_space);
+  return output;
+}
 
 static bool req_is_impossible(const region_mask& empty_mask,
                               const region_mask& req_mask,
@@ -89,7 +180,8 @@ bool is_inconsistent(const semantic_state& state,
 }
 
 bool entails(const semantic_state& state, class_id conclusion_cid,
-             const semantic_space& sem_space) {
+             const semantic_space& sem_space, profiler& prof) {
+  prof.entails_calls.fetch_add(1, std::memory_order_relaxed);
   if (is_inconsistent(state, sem_space)) {
     return false;
   }

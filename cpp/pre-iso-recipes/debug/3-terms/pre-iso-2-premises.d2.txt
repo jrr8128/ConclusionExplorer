@@ -1,0 +1,120 @@
+#1:  0 6 -> 8
+1. No A are B
+2. No ¬A are C
+C: No B are C
+
+#2:  0 7 -> 9
+1. No A are B
+2. No ¬A are ¬C
+C: No B are ¬C
+
+#3:  0 10 -> 2
+1. No A are B
+2. No ¬B are C
+C: No A are C
+
+#4:  0 11 -> 3
+1. No A are B
+2. No ¬B are ¬C
+C: No A are ¬C
+
+#5:  1 6 -> 10
+1. No A are ¬B
+2. No ¬A are C
+C: No ¬B are C
+
+#6:  1 7 -> 11
+1. No A are ¬B
+2. No ¬A are ¬C
+C: No ¬B are ¬C
+
+#7:  1 8 -> 2
+1. No A are ¬B
+2. No B are C
+C: No A are C
+
+#8:  1 9 -> 3
+1. No A are ¬B
+2. No B are ¬C
+C: No A are ¬C
+
+#9:  2 4 -> 8
+1. No A are C
+2. No ¬A are B
+C: No B are C
+
+#10:  2 5 -> 10
+1. No A are C
+2. No ¬A are ¬B
+C: No ¬B are C
+
+#11:  2 9 -> 0
+1. No A are C
+2. No B are ¬C
+C: No A are B
+
+#12:  2 11 -> 1
+1. No A are C
+2. No ¬B are ¬C
+C: No A are ¬B
+
+#13:  3 4 -> 9
+1. No A are ¬C
+2. No ¬A are B
+C: No B are ¬C
+
+#14:  3 5 -> 11
+1. No A are ¬C
+2. No ¬A are ¬B
+C: No ¬B are ¬C
+
+#15:  3 8 -> 0
+1. No A are ¬C
+2. No B are C
+C: No A are B
+
+#16:  3 10 -> 1
+1. No A are ¬C
+2. No ¬B are C
+C: No A are ¬B
+
+#17:  4 10 -> 6
+1. No ¬A are B
+2. No ¬B are C
+C: No ¬A are C
+
+#18:  4 11 -> 7
+1. No ¬A are B
+2. No ¬B are ¬C
+C: No ¬A are ¬C
+
+#19:  5 8 -> 6
+1. No ¬A are ¬B
+2. No B are C
+C: No ¬A are C
+
+#20:  5 9 -> 7
+1. No ¬A are ¬B
+2. No B are ¬C
+C: No ¬A are ¬C
+
+#21:  6 9 -> 4
+1. No ¬A are C
+2. No B are ¬C
+C: No ¬A are B
+
+#22:  6 11 -> 5
+1. No ¬A are C
+2. No ¬B are ¬C
+C: No ¬A are ¬B
+
+#23:  7 8 -> 4
+1. No ¬A are ¬C
+2. No B are C
+C: No ¬A are B
+
+#24:  7 10 -> 5
+1. No ¬A are ¬C
+2. No ¬B are C
+C: No ¬A are ¬B
+

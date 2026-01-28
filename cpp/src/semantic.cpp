@@ -2,11 +2,12 @@
 
 #include <assert.h>
 
+#include "isomorphism.hpp"
 #include "syntax.hpp"
 
 namespace conclusion_explorer {
 
-bool is_empty(const region_mask& mask, uint8_t active_words) {
+bool region_is_empty(const region_mask& mask, uint8_t active_words) {
   for (uint8_t index = 0; index < active_words; index++) {
     if (mask.w[index] != 0) {
       return false;
@@ -97,7 +98,7 @@ static void build_req_index_by_class_id(const syntax_space& syn_space,
   sem_space.req_index_by_class_id.assign(syn_space.class_count(), -1);
   sem_space.req_mask_by_req_index.clear();
   sem_space.req_mask_by_req_index.reserve(syn_space.class_count());
-  int16_t next = 0;
+  std::uint16_t next = 0;
   for (class_id cid{0}; cid.id < sem_space.req_index_by_class_id.size();
        cid.id++) {
     const statement& stmt = syn_space.rep_statement_by_class_id[cid.id];
@@ -111,11 +112,12 @@ static void build_req_index_by_class_id(const syntax_space& syn_space,
     for (uint8_t word = 0; word < sem_space.active_words; word++) {
       mask.w[word] = subject_mask.w[word] & predicate_mask.w[word];
     }
-    if (!is_empty(mask, sem_space.active_words)) {
+    if (!region_is_empty(mask, sem_space.active_words)) {
       sem_space.req_index_by_class_id[cid.id] = next++;
       sem_space.req_mask_by_req_index.push_back(mask);
     }
   }
+  sem_space.req_count = static_cast<std::uint16_t>(next);
   sem_space.req_words = static_cast<uint8_t>((next + 63) / 64);
 }
 
@@ -144,10 +146,15 @@ semantic_space build_semantic_space(const syntax_space& syn_space) {
   build_req_index_by_class_id(syn_space, sem_space);
   build_constraint_kind_by_cid(syn_space, sem_space);
 
+  precompute_build_permuted_region_index(syn_space, sem_space);
+  precompute_build_permuted_req_index(syn_space, sem_space);
+
   // DEBUG
   assert(sem_space.forbid_mask_by_class_id.size() == syn_space.class_count());
   assert(sem_space.req_index_by_class_id.size() == syn_space.class_count());
   assert(sem_space.req_mask_by_req_index.size() <= syn_space.class_count());
+  assert(!sem_space.permuted_region_index_by_perm_and_region.empty());
+  assert(!sem_space.permuted_req_index_by_perm_and_req.empty());
 
   return sem_space;
 }
