@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "canonicalizer.hpp"
+#include "profiler.hpp"
 
 namespace fs = std::filesystem;
 
@@ -147,7 +148,8 @@ void collector::add_solution(cid_list_key& tmp_key, std::uint8_t term_count,
                              const semantic_state& state,
                              const semantic_space& sem_space,
                              const syntax_space& syn_space,
-                             std::vector<std::uint16_t>& tmp_ids) {
+                             std::vector<std::uint16_t>& tmp_ids,
+                             profiler& prof) {
   const std::uint16_t k = static_cast<std::uint16_t>(path.size());
   if (k == 0) {
     return;
@@ -160,6 +162,7 @@ void collector::add_solution(cid_list_key& tmp_key, std::uint8_t term_count,
     return;
   }
 
+  prof.solutions_accepted.fetch_add(1, std::memory_order_relaxed);
   // Compact output line:
   // conc | cid cid cid
   {

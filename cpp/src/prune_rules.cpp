@@ -100,16 +100,17 @@ static bool entails_without_one(const premise_path& path, size_t skip_i,
   return entails(st, conc, s, prof);
 }
 
-static bool subsumed_by_any_premise(const premise_path& path, class_id conc,
-                                    const semantic_space& s, profiler& prof) {
-  for (class_id p : path) {
-    semantic_state st{};
-    if (apply_premise(st, p, s) != apply_result::inconsistent &&
-        entails(st, conc, s, prof))
-      return true;
-  }
-  return false;
-}
+// static bool subsumed_by_any_premise(const premise_path& path, class_id conc,
+//                                     const semantic_space& s, profiler& prof)
+//                                     {
+//   for (class_id p : path) {
+//     semantic_state st{};
+//     if (apply_premise(st, p, s) != apply_result::inconsistent &&
+//         entails(st, conc, s, prof))
+//       return true;
+//   }
+//   return false;
+// }
 
 static bool requires_all_premises(const premise_path& path, class_id conc,
                                   const semantic_space& s, profiler& prof) {
@@ -141,10 +142,10 @@ std::optional<class_id> prune_rules::unique_interesting_conclusion(
       continue;
     }
 
-    if (subsumed_by_any_premise(path, cid, sem_space, prof)) {
-      prof.subsumed.fetch_add(1, std::memory_order_relaxed);
-      continue;
-    }
+    // if (subsumed_by_any_premise(path, cid, sem_space, prof)) {
+    //   prof.subsumed.fetch_add(1, std::memory_order_relaxed);
+    //   continue;
+    // }
     if (!requires_all_premises(path, cid, sem_space, prof)) {
       prof.partial.fetch_add(1, std::memory_order_relaxed);
       continue;

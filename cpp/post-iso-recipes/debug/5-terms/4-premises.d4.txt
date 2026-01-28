@@ -1,0 +1,126 @@
+#1:  0 2 12 76 -> 63
+1. No A are B
+2. No A are C
+3. No ¬A are D
+4. Some D are E
+C: Some ¬B are ¬C
+
+#2:  0 2 12 77 -> 63
+1. No A are B
+2. No A are C
+3. No ¬A are D
+4. Some D are ¬E
+C: Some ¬B are ¬C
+
+#3:  0 2 13 78 -> 63
+1. No A are B
+2. No A are C
+3. No ¬A are ¬D
+4. Some ¬D are E
+C: Some ¬B are ¬C
+
+#4:  0 2 13 79 -> 63
+1. No A are B
+2. No A are C
+3. No ¬A are ¬D
+4. Some ¬D are ¬E
+C: Some ¬B are ¬C
+
+#5:  0 3 13 78 -> 62
+1. No A are B
+2. No A are ¬C
+3. No ¬A are ¬D
+4. Some ¬D are E
+C: Some ¬B are C
+
+#6:  0 3 13 79 -> 62
+1. No A are B
+2. No A are ¬C
+3. No ¬A are ¬D
+4. Some ¬D are ¬E
+C: Some ¬B are C
+
+#7:  1 3 13 78 -> 56
+1. No A are ¬B
+2. No A are ¬C
+3. No ¬A are ¬D
+4. Some ¬D are E
+C: Some B are C
+
+#8:  1 3 13 79 -> 56
+1. No A are ¬B
+2. No A are ¬C
+3. No ¬A are ¬D
+4. Some ¬D are ¬E
+C: Some B are C
+
+#9:  1 11 13 66 -> 68
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬A are ¬D
+4. Some ¬B are E
+C: Some C are D
+
+#10:  1 11 13 67 -> 68
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬A are ¬D
+4. Some ¬B are ¬E
+C: Some C are D
+
+#11:  1 11 24 66 -> 69
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬B are D
+4. Some ¬B are E
+C: Some C are ¬D
+
+#12:  1 11 24 67 -> 69
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬B are D
+4. Some ¬B are ¬E
+C: Some C are ¬D
+
+#13:  1 11 25 66 -> 68
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬B are ¬D
+4. Some ¬B are E
+C: Some C are D
+
+#14:  1 11 25 67 -> 68
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬B are ¬D
+4. Some ¬B are ¬E
+C: Some C are D
+
+#15:  1 11 32 74 -> 59
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬C are D
+4. Some ¬C are E
+C: Some B are ¬D
+
+#16:  1 11 32 75 -> 59
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬C are D
+4. Some ¬C are ¬E
+C: Some B are ¬D
+
+#17:  1 11 33 74 -> 58
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬C are ¬D
+4. Some ¬C are E
+C: Some B are D
+
+#18:  1 11 33 75 -> 58
+1. No A are ¬B
+2. No ¬A are ¬C
+3. No ¬C are ¬D
+4. Some ¬C are ¬E
+C: Some B are D
+

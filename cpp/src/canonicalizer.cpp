@@ -66,6 +66,22 @@ static bool key_less(const canonical_key& a_key, const canonical_key& b_key,
   return false;
 }
 
+// a ⊑ b  means: a is WEAKER-or-equal to b (a has a subset of b’s constraints)
+bool key_weaker_eq(const canonical_key& a, const canonical_key& b,
+                   const semantic_space& sem) {
+  if (a.base_terms_mask != b.base_terms_mask) return false;
+
+  for (std::uint8_t w = 0; w < sem.active_words; ++w) {
+    // a.empty subset of b.empty
+    if ((a.empty.w[w] & ~b.empty.w[w]) != 0) return false;
+  }
+  for (std::uint8_t w = 0; w < sem.req_words; ++w) {
+    // a.req_bits subset of b.req_bits
+    if ((a.req_bits[w] & ~b.req_bits[w]) != 0) return false;
+  }
+  return true;
+}
+
 static canonical_key pack_key(const semantic_state& state,
                               const semantic_space& sem_space) {
   canonical_key k{};

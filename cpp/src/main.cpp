@@ -10,7 +10,9 @@
 #include "syntax.hpp"
 using namespace ::conclusion_explorer;
 
+#include <atomic>
 #include <chrono>
+#include <csignal>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -54,6 +56,7 @@ static std::uint8_t parse_term_count(int argc, char** argv) {
 
 int main(int argc, char** argv) {
   const std::uint8_t term_count = parse_term_count(argc, argv);
+  conclusion_explorer::install_sigint_handler();
   syntax_space syn_space = build_syntax_space(term_count);
   semantic_space sem_space = build_semantic_space(syn_space);
   prune_rules rules{term_count, syn_space, sem_space};
@@ -62,13 +65,14 @@ int main(int argc, char** argv) {
   collector puzzle_collector{collector_config{}};
 
   puzzle_collector.begin_term_run(term_count, syn_space);
-  uint8_t max_depth = term_count * 2;
+  uint8_t max_depth = term_count + 1;
   premise_path path{};
   semantic_state root{};
 
   profiler prof;
   prof.begin_term_run(term_count, max_depth);
   std::jthread printer(live_printer, std::cref(prof));
+
   run_iddfs(sem_space, syn_space, rules, memo_table, root, path, max_depth,
             puzzle_collector, prof);
   printer.request_stop();

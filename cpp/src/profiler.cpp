@@ -31,12 +31,13 @@ void profiler::begin_term_run(std::uint8_t term_count, std::uint8_t max_depth) {
   leaf_non_unique.store(0, std::memory_order_relaxed);
   leaf_taste_banned.store(0, std::memory_order_relaxed);
   solutions_emitted.store(0, std::memory_order_relaxed);
+  solutions_accepted.store(0, std::memory_order_relaxed);
 
   apply_calls.store(0, std::memory_order_relaxed);
   entails_calls.store(0, std::memory_order_relaxed);
   unique_conclusion_scans.store(0, std::memory_order_relaxed);
   redunant.store(0, std::memory_order_relaxed);
-  subsumed.store(0, std::memory_order_relaxed);
+  // subsumed.store(0, std::memory_order_relaxed);
   partial.store(0, std::memory_order_relaxed);
   toomanyconc.store(0, std::memory_order_relaxed);
   max_stack_depth_observed.store(0, std::memory_order_relaxed);
@@ -91,9 +92,7 @@ void profiler::write_stats_file(std::uint8_t term_count,
   out << "[run]\n";
   out << "elapsed " << format_elapsed_ms(elapsed_ms()) << "\n";
   out << "term_count " << int(term_count) << "\n";
-  out << "max_depth " << int(max_depth) << "\n";
-  out << "current_limit " << int(loadu8(current_limit)) << "\n";
-  out << "current_stack_size " << loadsz(current_stack_size) << "\n\n";
+  out << "max_depth " << int(max_depth) << "\n\n";
 
   out << "[sizes]\n";
   out << "premise_seen_size " << load64(premise_seen_size) << "\n";
@@ -102,18 +101,19 @@ void profiler::write_stats_file(std::uint8_t term_count,
   out << "[totals]\n";
   out << "nodes_considered " << load64(nodes_considered) << "\n";
   out << "solutions_emitted " << load64(solutions_emitted) << "\n";
+  out << "solutions_accepted " << load64(solutions_accepted) << "\n";
   out << "max_stack_depth_observed " << load64(max_stack_depth_observed)
       << "\n\n";
 
   out << "[leaf]\n";
-  out << "leaf_reached " << load64(leaf_reached) << "\n";
-  out << "leaf_missing_coverage " << load64(leaf_missing_coverage) << "\n";
-  out << "leaf_non_unique " << load64(leaf_non_unique) << "\n";
-  out << "leaf_taste_banned " << load64(leaf_taste_banned) << "\n\n";
+  out << "reached " << load64(leaf_reached) << "\n";
+  out << "missing_coverage " << load64(leaf_missing_coverage) << "\n";
+  out << "non_unique " << load64(leaf_non_unique) << "\n";
+  out << "taste_banned " << load64(leaf_taste_banned) << "\n\n";
 
   out << "[conclusion_filters]\n";
   out << "redundant " << load64(redunant) << "\n";
-  out << "subsumed " << load64(subsumed) << "\n";
+  // out << "subsumed " << load64(subsumed) << "\n";
   out << "partial " << load64(partial) << "\n";
   out << "too_many " << load64(toomanyconc) << "\n\n";
 

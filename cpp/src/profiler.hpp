@@ -32,13 +32,14 @@ struct profiler {
   std::atomic<std::uint64_t> leaf_non_unique{0};
   std::atomic<std::uint64_t> leaf_taste_banned{0};
   std::atomic<std::uint64_t> solutions_emitted{0};
+  std::atomic<std::uint64_t> solutions_accepted{0};
 
   // optional
   std::atomic<std::uint64_t> apply_calls{0};
   std::atomic<std::uint64_t> entails_calls{0};
   std::atomic<std::uint64_t> unique_conclusion_scans{0};
   std::atomic<std::uint64_t> redunant{0};
-  std::atomic<std::uint64_t> subsumed{0};
+  // std::atomic<std::uint64_t> subsumed{0};
   std::atomic<std::uint64_t> partial{0};
   std::atomic<std::uint64_t> toomanyconc{0};
   std::atomic<std::uint64_t> max_stack_depth_observed{0};

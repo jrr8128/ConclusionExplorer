@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "canonicalizer.hpp"
+
 namespace conclusion_explorer {
 
 struct region_mask_hash {
@@ -31,6 +33,46 @@ struct canonical_key_hash {
 size_t memo_key_hash::operator()(const memo_key& k) const noexcept {
   size_t h = canonical_key_hash{}(k.c_key);
   return h;
+}
+
+bool keys_equal(const canonical_key& a, const canonical_key& b,
+                const semantic_space& sem) {
+  if (a.base_terms_mask != b.base_terms_mask) return false;
+  for (std::uint8_t w = 0; w < sem.active_words; ++w)
+    if (a.empty.w[w] != b.empty.w[w]) return false;
+  for (std::uint8_t w = 0; w < sem.req_words; ++w)
+    if (a.req_bits[w] != b.req_bits[w]) return false;
+  return true;
+}
+
+bool memo::should_prune_dominance(const semantic_state& state,
+                                  std::uint8_t depth_left,
+                                  const syntax_space& syn_space,
+                                  const semantic_space& sem_space) const {
+  const canonical_key k = c.make_iso_key(state, syn_space, sem_space);
+  const auto& vec = dom[k.base_terms_mask];
+  for (const dom_entry& e : vec) {
+    if (keys_equal(e.key, k, sem_space) && e.best_depth_left >= depth_left) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void memo::record_dominance(const semantic_state& state,
+                            std::uint8_t depth_left,
+                            const syntax_space& syn_space,
+                            const semantic_space& sem_space) {
+  const canonical_key k = c.make_iso_key(state, syn_space, sem_space);
+  auto& vec = dom[k.base_terms_mask];
+
+  for (dom_entry& e : vec) {
+    if (keys_equal(e.key, k, sem_space)) {
+      if (e.best_depth_left < depth_left) e.best_depth_left = depth_left;
+      return;
+    }
+  }
+  vec.push_back(dom_entry{.key = k, .best_depth_left = depth_left});
 }
 
 bool memo::is_dead(const semantic_state& state, const syntax_space& syn_space,

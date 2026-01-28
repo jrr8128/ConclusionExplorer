@@ -43,7 +43,8 @@ class collector {
                     class_id conclusion_cid, const premise_path& path,
                     const semantic_state& state,
                     const semantic_space& sem_space,
-                    const syntax_space& syn_space, std::vector<std::uint16_t>&);
+                    const syntax_space& syn_space, std::vector<std::uint16_t>&,
+                    profiler&);
 
   std::unordered_map<cid_list_key, std::uint32_t, cid_list_key_hash>
       iso_count_by_rep_;

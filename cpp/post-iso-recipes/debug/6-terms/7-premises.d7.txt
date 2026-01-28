@@ -1,0 +1,30 @@
+#428:  0 2 15 29 30 42 116 -> 80
+1. No A are B
+2. No A are C
+3. No ¬A are ¬D
+4. No ¬B are ¬C
+5. No ¬B are D
+6. No ¬C are D
+7. Some E are F
+C: Some B are C
+
+#429:  0 2 15 29 30 42 117 -> 80
+1. No A are B
+2. No A are C
+3. No ¬A are ¬D
+4. No ¬B are ¬C
+5. No ¬B are D
+6. No ¬C are D
+7. Some E are ¬F
+C: Some B are C
+
+#430:  0 2 15 29 30 42 119 -> 80
+1. No A are B
+2. No A are C
+3. No ¬A are ¬D
+4. No ¬B are ¬C
+5. No ¬B are D
+6. No ¬C are D
+7. Some ¬E are ¬F
+C: Some B are C
+

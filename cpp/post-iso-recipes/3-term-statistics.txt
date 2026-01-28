@@ -1,7 +1,7 @@
 [run]
-elapsed 0.019s
+elapsed 0.017s
 term_count 3
-max_depth 4
+max_depth 6
 
 [sizes]
 premise_seen_size 48
@@ -14,31 +14,32 @@ solutions_accepted 4
 max_stack_depth_observed 3
 
 [leaf]
-reached 304
+reached 310
 missing_coverage 6
-non_unique 288
+non_unique 294
 taste_banned 0
 
 [conclusion_filters]
-redundant 820
+redundant 838
+subsumed 0
 partial 278
 too_many 12
 
 [prune]
 conflicts 139
 inconsistent 4
-memo 70
-should_expand 0
+memo 60
+should_expand 8
 
 [optional]
 apply_calls 436
-entails_calls 6944
-unique_conclusion_scans 298
+entails_calls 7972
+unique_conclusion_scans 304
 
 [by_limit]
 2 nodes 114 leaves 74 solutions 10
-3 nodes 461 leaves 230 solutions 0
+3 nodes 461 leaves 236 solutions 0
 
 [by_k]
 2 leaves 74 solutions 10
-3 leaves 230 solutions 0
+3 leaves 236 solutions 0

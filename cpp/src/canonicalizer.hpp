@@ -35,4 +35,6 @@ void canon_premise_set_bitset_key(premise_bitset_key& out_best,
                                   const syntax_space&,
                                   std::uint16_t class_words,
                                   premise_bitset_key& tmp);
+bool key_weaker_eq(const canonical_key& a, const canonical_key& b,
+                   const semantic_space& sem);
 }  // namespace conclusion_explorer
