@@ -214,7 +214,7 @@ void collector::write_meta_(std::uint8_t term_count,
   const std::uint16_t class_count =
       static_cast<std::uint16_t>(syn_space.class_count());
   const std::uint16_t stmt_count =
-      static_cast<std::uint16_t>(syn_space.all_statements.size());
+      static_cast<std::uint16_t>(syn_space.all_statements_by_id.size());
 
   // Build class -> members list.
   std::vector<std::vector<statement_id>> members(class_count);
@@ -239,7 +239,7 @@ void collector::write_meta_(std::uint8_t term_count,
   out << "[statements]\n";
   // statement_id : f s_term s_comp p_term p_comp
   for (std::uint16_t sid = 0; sid < stmt_count; ++sid) {
-    const statement& s = syn_space.all_statements[sid];
+    const statement& s = syn_space.all_statements_by_id[sid];
     out << sid << " : " << static_cast<int>(s.f) << " "
         << static_cast<int>(s.subject.term) << " "
         << static_cast<int>(s.subject.is_complement) << " "

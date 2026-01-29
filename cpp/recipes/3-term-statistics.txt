@@ -1,39 +1,41 @@
 [run]
-elapsed 0.019s
+elapsed 0.006s
 term_count 3
 max_depth 4
 
 [sizes]
 premise_seen_size 48
-premise_seen_buckets 1048576
+premise_seen_buckets 1056323
 
-[totals]
-nodes_considered 575
-solutions_emitted 10
-solutions_accepted 4
+[flow]
+1. considered 575
+2. descended 54
+3. leaves 304
+4. solutions_emitted 10
+5. solutions_accepted 4
 max_stack_depth_observed 3
 
-[leaf]
-reached 304
-missing_coverage 6
-non_unique 288
-taste_banned 0
+[preleaf_prune | try_descend]
+1. conflict 139
+2. no_change 4
+3. inconsistent 4
+4. memo_dead 0
+5. dominance 70
+6. should_expand 0
+7. premise_seen 0
 
-[conclusion_filters]
-redundant 820
-partial 278
-too_many 12
+[leaf_prune | handle_leaf]
+1. missing_coverage 6
+2. no_unique_conclusion 288
+3. taste_banned 0
+4. requires_all_failed 278
+5. too_many_conclusions 12
+6. already_present 820
 
-[prune]
-conflicts 139
-inconsistent 4
-memo 70
-should_expand 0
-
-[optional]
-apply_calls 436
-entails_calls 6944
-unique_conclusion_scans 298
+[workload]
+apply_premise_calls 436
+entails_calls 658
+leaf_unique_scans 298
 
 [by_limit]
 2 nodes 114 leaves 74 solutions 10

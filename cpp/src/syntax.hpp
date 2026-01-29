@@ -29,7 +29,7 @@ struct syntax_space {
 
   std::uint8_t term_count;
 
-  all_statements all_statements;
+  all_statements all_statements_by_id;
   equiv_class_id_by_statement_id class_id_by_statement_id;
   std::vector<representative_id> rep_id_by_class_id;
   std::vector<statement> rep_statement_by_class_id;

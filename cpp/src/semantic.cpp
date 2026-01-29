@@ -132,6 +132,27 @@ static void build_constraint_kind_by_cid(const syntax_space& syn_space,
   }
 }
 
+static void build_constraint_partitions(const syntax_space& syn_space, semantic_space& sem_space)
+{
+  sem_space.forbid_cids.clear();
+  sem_space.req_conc_cids.clear();
+  sem_space.forbid_cids.reserve(syn_space.class_count());
+  sem_space.req_conc_cids.reserve(syn_space.class_count());
+
+  for (class_id cid{0}; cid.id < syn_space.class_count(); cid.id++)
+  {
+    if(sem_space.kind_by_class_id[cid.id] == constraint_kind::forbid)
+    {
+      sem_space.forbid_cids.push_back(cid);
+      continue;
+    }
+    if(sem_space.req_index_by_class_id[cid.id] >= 0)
+    {
+      sem_space.req_conc_cids.push_back(cid);
+    }
+  }
+}
+
 semantic_space build_semantic_space(const syntax_space& syn_space) {
   // DEBUG
   assert(syn_space.term_count <= MAX_TERMS);
@@ -145,6 +166,7 @@ semantic_space build_semantic_space(const syntax_space& syn_space) {
   build_forbid_by_class_id(syn_space, sem_space);
   build_req_index_by_class_id(syn_space, sem_space);
   build_constraint_kind_by_cid(syn_space, sem_space);
+  build_constraint_partitions(syn_space, sem_space);
 
   precompute_build_permuted_region_index(syn_space, sem_space);
   precompute_build_permuted_req_index(syn_space, sem_space);

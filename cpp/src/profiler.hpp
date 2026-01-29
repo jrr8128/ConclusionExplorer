@@ -3,6 +3,9 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <iomanip>
+#include <sstream>
 
 namespace conclusion_explorer {
 
@@ -14,6 +17,20 @@ inline std::string format_elapsed_ms(std::uint64_t ms) {
   return oss.str();
 }
 
+static std::string pct_str(std::uint64_t num, std::uint64_t den) {
+  double p = den ? (100.0 * double(num) / double(den)) : 0.0;
+  std::ostringstream oss;
+  if (p >= 1.0) {
+    oss << std::fixed << std::setprecision(1);
+  } else if (p >= 0.1) {
+    oss << std::fixed << std::setprecision(2);
+  } else {
+    oss << std::fixed << std::setprecision(3);
+  }
+  oss << p << "%";
+  return oss.str();
+}
+
 struct profiler {
   std::chrono::steady_clock::time_point start_time{};
   std::chrono::steady_clock::time_point end_time{};
@@ -22,26 +39,38 @@ struct profiler {
   std::atomic<std::uint8_t> current_limit{0};
   std::atomic<std::size_t> current_stack_size{0};
 
-  std::atomic<std::uint64_t> nodes_considered{0};
-  std::atomic<std::uint64_t> conflicts_pruned{0};
-  std::atomic<std::uint64_t> inconsistent_pruned{0};
-  std::atomic<std::uint64_t> memo_pruned{0};
-  std::atomic<std::uint64_t> should_expand_pruned{0};
-  std::atomic<std::uint64_t> leaf_reached{0};
-  std::atomic<std::uint64_t> leaf_missing_coverage{0};
-  std::atomic<std::uint64_t> leaf_non_unique{0};
-  std::atomic<std::uint64_t> leaf_taste_banned{0};
+  //flow
+  std::atomic<std::uint64_t> candidates_considered{0};
+  std::atomic<std::uint64_t> descended{0};
+  std::atomic<std::uint64_t> leaves_reached{0};
+
+  //preleaf prune
+  std::atomic<std::uint64_t> prune_conflict{0};
+  std::atomic<std::uint64_t> prune_no_change{0};
+  std::atomic<std::uint64_t> prune_inconsistent{0};
+  std::atomic<std::uint64_t> prune_memo_dead{0};
+  std::atomic<std::uint64_t> prune_dominance{0};
+  std::atomic<std::uint64_t> prune_should_expand{0};
+  std::atomic<std::uint64_t> prune_premise_seen{0};
+
+  //leaf prune
+  std::atomic<std::uint64_t> leaf_prune_missing_coverage{0};
+  std::atomic<std::uint64_t> leaf_prune_no_unique_conclusion{0};
+  std::atomic<std::uint64_t> leaf_prune_taste_banned{0};
+  std::atomic<std::uint64_t> leaf_prune_present{0};
+  std::atomic<std::uint64_t> leaf_prune_requires_all_failed{0};
+  std::atomic<std::uint64_t> leaf_prune_too_many_conclusions{0};
+
+  //outcomes
   std::atomic<std::uint64_t> solutions_emitted{0};
   std::atomic<std::uint64_t> solutions_accepted{0};
 
-  // optional
-  std::atomic<std::uint64_t> apply_calls{0};
+
+
+  // workload
+  std::atomic<std::uint64_t> apply_premise_calls{0};
   std::atomic<std::uint64_t> entails_calls{0};
-  std::atomic<std::uint64_t> unique_conclusion_scans{0};
-  std::atomic<std::uint64_t> redunant{0};
-  // std::atomic<std::uint64_t> subsumed{0};
-  std::atomic<std::uint64_t> partial{0};
-  std::atomic<std::uint64_t> toomanyconc{0};
+  std::atomic<std::uint64_t> leaf_unique_scans{0};
   std::atomic<std::uint64_t> max_stack_depth_observed{0};
 
   // --- per limit / per k ---

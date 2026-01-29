@@ -3,10 +3,10 @@
 #include <atomic>
 #include <csignal>
 #include <iostream>
+#include <iomanip>
 #include <limits>
 #include <unordered_map>
 
-#include "puzzle_collector.hpp"
 
 namespace conclusion_explorer {
 
@@ -45,6 +45,7 @@ struct premise_bitset_key_eq {
   }
 };
 
+
 struct iddfs_frame {
   semantic_state state;
   uint16_t next_cid;
@@ -52,253 +53,12 @@ struct iddfs_frame {
   size_t path_size_before;
 };
 
-void profiler::print_snapshot() const {
-  const auto limit = current_limit.load(std::memory_order_relaxed);
-  const auto stack = current_stack_size.load(std::memory_order_relaxed);
-
-  const auto ps = premise_seen_size.load(std::memory_order_relaxed);
-  const auto pbkt = premise_seen_buckets.load(std::memory_order_relaxed);
-
-  const auto nodes = nodes_considered.load(std::memory_order_relaxed);
-
-  const auto leaf_re = leaf_reached.load(std::memory_order_relaxed);
-  const auto leaf_cov = leaf_missing_coverage.load(std::memory_order_relaxed);
-  const auto leaf_uniq = leaf_non_unique.load(std::memory_order_relaxed);
-  const auto leaf_bt = leaf_taste_banned.load(std::memory_order_relaxed);
-
-  const auto r = redunant.load(std::memory_order_relaxed);
-  // const auto s = subsumed.load(std::memory_order_relaxed);
-  const auto p = partial.load(std::memory_order_relaxed);
-  const auto m = toomanyconc.load(std::memory_order_relaxed);
-
-  const auto sol = solutions_emitted.load(std::memory_order_relaxed);
-  const auto sol2 = solutions_accepted.load(std::memory_order_relaxed);
-
-  const auto pr_conf = conflicts_pruned.load(std::memory_order_relaxed);
-  const auto pr_inc = inconsistent_pruned.load(std::memory_order_relaxed);
-  const auto pr_memo = memo_pruned.load(std::memory_order_relaxed);
-  const auto pr_se = should_expand_pruned.load(std::memory_order_relaxed);
-
-  std::cout << "t=" << format_elapsed_ms(elapsed_ms()) << "  d=" << int(limit)
-            << "  stack=" << stack << "  nodes=" << nodes
-            << "  premise_seen=" << ps << " (bkt=" << pbkt << ")\n"
-            << "leaf:   reached=" << leaf_re << "  miss_cov=" << leaf_cov
-            << "  nonuniq=" << leaf_uniq << "  taste=" << leaf_bt
-            << "  sol: emit=" << sol << "  accept=" << sol2 << "\n"
-            << "conc:   redundant="
-            << r
-            //<< "  subsumed=" << s
-            << "  partial=" << p << "  >1=" << m << "\n"
-            << "prune:  conf=" << pr_conf << "  inc=" << pr_inc
-            << "  memo=" << pr_memo << "  se=" << pr_se << "\n";
-}
-
-static void set_present(class_bitset& bits, uint16_t cid) {
-  bits[cid >> 6] |= (1ull << (cid & 63));
-}
-
-static void clear_present_all(class_bitset& bits, std::uint16_t class_words) {
-  for (std::uint16_t i = 0; i < class_words; ++i) bits[i] = 0;
-}
-
-static void clear_present_one(class_bitset& bits, std::uint16_t cid) {
-  bits[cid >> 6] &= ~(1ull << (cid & 63));
-}
-
-static bool overlaps_conflicts(const class_bitset& conflicts,
-                               const class_bitset& present,
-                               uint16_t class_words) {
-  for (uint16_t word_index = 0; word_index < class_words; word_index++) {
-    if ((conflicts[word_index] & present[word_index]) != 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-static void pop_to(premise_path& path, class_bitset& present_bits, size_t sz) {
-  while (path.size() > sz) {
-    const class_id cid = path.back();
-    clear_present_one(present_bits, cid.id);
-    path.pop_back();
-  }
-}
-
-static bool leaf_missing_coverage(const prune_rules& rules,
-                                  const semantic_state& state, profiler& prof) {
-  if ((state.base_terms_mask & rules.goal_mask) != rules.goal_mask) {
-    prof.leaf_missing_coverage.fetch_add(1, std::memory_order_relaxed);
-    return true;
-  }
-  return false;
-}
-
-static std::optional<class_id> leaf_unique_interesting_conclusion(
-    const prune_rules& rules, const semantic_state& state,
-    const premise_path& path, const class_bitset& present_bits,
-    const semantic_space& sem_space, profiler& prof) {
-  prof.unique_conclusion_scans.fetch_add(1, std::memory_order_relaxed);
-  return rules.unique_interesting_conclusion(state, path, present_bits,
-                                             sem_space, prof);
-}
-
-static bool leaf_taste_banned(const prune_rules& rules, class_id conc,
-                              const premise_path& path, profiler& prof) {
-  if (rules.is_banned_with_path(conc, path)) {
-    prof.leaf_taste_banned.fetch_add(1, std::memory_order_relaxed);
-    return true;
-  }
-  return false;
-}
-
-static void leaf_record_coverage(class_id conc) {
-  if (!has_solution[conc.id]) {
-    has_solution[conc.id] = 1;
-    ++covered;
-  }
-}
-
-static void leaf_emit_solution(
-    cid_list_key& tmp_out, collector& output, std::uint8_t term_count,
-    class_id conc, const premise_path& path, const semantic_state& state,
-    const semantic_space& sem_space, const syntax_space& syn_space,
-    std::vector<std::uint16_t>& tmp_ids, profiler& prof) {
-  output.add_solution(tmp_out, term_count, conc, path, state, sem_space,
-                      syn_space, tmp_ids, prof);
-}
-
-static bool handle_leaf(cid_list_key& tmp_out, const prune_rules& rules,
-                        const semantic_space& sem_space,
-                        const syntax_space& syn_space,
-                        const class_bitset& present_bits, collector& output,
-                        const semantic_state& state, const premise_path& path,
-                        profiler& prof, std::vector<std::uint16_t>& tmp_ids) {
-  if (leaf_missing_coverage(rules, state, prof)) {
-    return false;
-  }
-
-  const std::optional<class_id> conc = leaf_unique_interesting_conclusion(
-      rules, state, path, present_bits, sem_space, prof);
-  if (!conc) {
-    prof.leaf_non_unique.fetch_add(1, std::memory_order_relaxed);
-    return false;
-  }
-
-  if (leaf_taste_banned(rules, *conc, path, prof)) {
-    return false;
-  }
-
-  leaf_record_coverage(*conc);
-  leaf_emit_solution(tmp_out, output, syn_space.term_count, *conc, path, state,
-                     sem_space, syn_space, tmp_ids, prof);
-  return true;
-}
-
-struct descend_plan {
-  semantic_state child;
-  std::uint16_t next_min_id = 0;
-  std::uint8_t next_depth_left = 0;
-};
-
-// 1) cheap prune: conflicts vs present
-static bool conflict_prune(const prune_rules& rules,
-                           const class_bitset& present_bits,
-                           std::uint16_t class_words, class_id cid,
-                           profiler& prof) {
-  if (overlaps_conflicts(rules.conflict_bits_by_cid[cid.id], present_bits,
-                         class_words)) {
-    prof.conflicts_pruned.fetch_add(1, std::memory_order_relaxed);
-    return true;
-  }
-  return false;
-}
-
-// 2) prepare child state + derived params
-static descend_plan init_descend_plan(const iddfs_frame& frame, class_id cid) {
-  descend_plan p{};
-  p.child = frame.state;
-  p.next_min_id = static_cast<std::uint16_t>(cid.id + 1);
-  p.next_depth_left = static_cast<std::uint8_t>(frame.depth_left - 1);
-  return p;
-}
-
-// 3) apply premise (records dead on inconsistency)
-static apply_result apply_premise_result(memo& memo_table,
-                                         const syntax_space& syn_space,
-                                         const semantic_space& sem_space,
-                                         class_id cid, descend_plan& p,
-                                         profiler& prof) {
-  prof.apply_calls.fetch_add(1, std::memory_order_relaxed);
-  apply_result add_premise_result = apply_premise(p.child, cid, sem_space);
-  if (add_premise_result == apply_result::inconsistent) {
-    memo_table.record_dead(p.child, syn_space, sem_space);
-    prof.inconsistent_pruned.fetch_add(1, std::memory_order_relaxed);
-    return apply_result::inconsistent;
-  }
-  return add_premise_result;
-}
-
-// 4) update base coverage, then state-memo prune
-static bool memo_prune_dead(memo& memo_table, const prune_rules& rules,
-                            const syntax_space& syn_space,
-                            const semantic_space& sem_space, class_id cid,
-                            descend_plan& p, profiler& prof) {
-  p.child.base_terms_mask |= rules.base_terms_mask_by_cid[cid.id];
-  if (memo_table.is_dead(p.child, syn_space, sem_space)) {
-    prof.memo_pruned.fetch_add(1, std::memory_order_relaxed);
-    return true;
-  }
-  return false;
-}
-
-// 5) dominance prune
-static bool dominance_prune(memo& memo_table, const syntax_space& syn_space,
-                            const semantic_space& sem_space,
-                            const descend_plan& p, profiler& prof) {
-  if (memo_table.should_prune_dominance(p.child, p.next_depth_left, syn_space,
-                                        sem_space)) {
-    prof.memo_pruned.fetch_add(1, std::memory_order_relaxed);
-    return true;
-  }
-  return false;
-}
-
-// Main: reads like the algorithm
-static bool try_descend(const prune_rules& rules, memo& memo_table,
-                        const syntax_space& syn_space,
-                        const semantic_space& sem_space,
-                        const class_bitset& present_bits,
-                        std::uint16_t class_words, const iddfs_frame& frame,
-                        class_id cid, semantic_state& child_state,
-                        std::uint16_t& next_min_id,
-                        std::uint8_t& next_depth_left, profiler& prof) {
-  if (conflict_prune(rules, present_bits, class_words, cid, prof)) {
-    return false;
-  }
-  descend_plan p = init_descend_plan(frame, cid);
-
-  if (apply_premise_result(memo_table, syn_space, sem_space, cid, p, prof) !=
-      apply_result::changed) {
-    return false;
-  }
-  if (memo_prune_dead(memo_table, rules, syn_space, sem_space, cid, p, prof)) {
-    return false;
-  }
-  if (dominance_prune(memo_table, syn_space, sem_space, p, prof)) {
-    return false;
-  }
-  // commit outputs
-  child_state = p.child;
-  next_min_id = p.next_min_id;
-  next_depth_left = p.next_depth_left;
-  return true;
-}
-
 using premise_seen_map =
     std::unordered_map<premise_bitset_key, std::int16_t,
                        premise_bitset_key_hash, premise_bitset_key_eq>;
 
-struct iddfs_ctx {
+
+  struct iddfs_ctx {
   // inputs
   const semantic_space& sem_space;
   const syntax_space& syn_space;
@@ -324,6 +84,264 @@ struct iddfs_ctx {
   premise_bitset_key tmp_pkey{};
 };
 
+
+
+
+void profiler::print_snapshot() const {
+  const auto limit = current_limit.load(std::memory_order_relaxed);
+  const auto stack = current_stack_size.load(std::memory_order_relaxed);
+  const auto ps = premise_seen_size.load(std::memory_order_relaxed);
+
+  const auto nodes = candidates_considered.load(std::memory_order_relaxed);
+  const auto desc = descended.load(std::memory_order_relaxed);
+  const auto leaves = leaves_reached.load(std::memory_order_relaxed);
+  const auto sol = solutions_emitted.load(std::memory_order_relaxed);
+  const auto sol2 = solutions_accepted.load(std::memory_order_relaxed);
+
+  const auto leaf_cov = leaf_prune_missing_coverage.load(std::memory_order_relaxed);
+  const auto leaf_uniq = leaf_prune_no_unique_conclusion.load(std::memory_order_relaxed);
+  const auto leaf_bt = leaf_prune_taste_banned.load(std::memory_order_relaxed);
+
+  const auto conc_present = leaf_prune_present.load(std::memory_order_relaxed);
+  const auto conc_reqall = leaf_prune_requires_all_failed.load(std::memory_order_relaxed);
+  const auto conc_toomany = leaf_prune_too_many_conclusions.load(std::memory_order_relaxed);
+
+  const auto pr_conf = prune_conflict.load(std::memory_order_relaxed);
+  const auto pr_nc = prune_no_change.load(std::memory_order_relaxed);
+  const auto pr_inc = prune_inconsistent.load(std::memory_order_relaxed);
+  const auto pr_dead = prune_memo_dead.load(std::memory_order_relaxed);
+  const auto pr_dom = prune_dominance.load(std::memory_order_relaxed);
+  const auto pr_se = prune_should_expand.load(std::memory_order_relaxed);
+  const auto pr_seen = prune_premise_seen.load(std::memory_order_relaxed);
+
+  auto pct = [](std::uint64_t num, std::uint64_t den) -> double {
+    return den ? (100.0 * double(num) / double(den)) : 0.0;
+  };
+
+  const auto old_flags = std::cout.flags();
+  const auto old_prec = std::cout.precision();
+  std::cout << std::fixed << std::setprecision(1);
+
+  std::cout << "t=" << format_elapsed_ms(elapsed_ms())
+            << "  d=" << int(limit)
+            << "  stack=" << stack
+            << "  nodes=" << nodes
+            << "  seen=" << ps
+            << "  leaf=" << leaves << "\n"
+            << "leaf:   reached=" << leaves
+            << "  miss_cov=" << leaf_cov
+            << "  nonuniq=" << leaf_uniq
+            << "  taste=" << leaf_bt
+            << "  sol: emit=" << sol
+            << "  accept=" << sol2 << "\n"
+            << "conc:   present=" << conc_present
+            << "  reqall=" << conc_reqall
+            << "  >1=" << conc_toomany << "\n"
+            << "prune:  conf=" << pr_conf
+            << "  nochg=" << pr_nc
+            << "  inc=" << pr_inc
+            << "  dead=" << pr_dead
+            << "  dom=" << pr_dom
+            << "  se=" << pr_se
+            << "  seen=" << pr_seen << "\n"
+            << "check stage survival rates: "
+            << "preleaf=" << pct_str(desc, nodes) << " of cons | "
+            << "leaf=" << pct_str(leaves, nodes) << " overall, "
+            << pct_str(leaves, desc) << " of preleaf | "
+            << "final=" << pct_str(sol, nodes) << " overall, "
+            << pct_str(sol, leaves) << " of leaf | "
+            << "recorded=" << pct_str(sol2, nodes) << " overall, "
+            << pct_str(sol2, sol) << " of final\n";
+
+
+  std::cout.flags(old_flags);
+  std::cout.precision(old_prec);
+}
+
+
+static void set_present(class_bitset& bits, uint16_t cid) {
+  bits[cid >> 6] |= (1ull << (cid & 63));
+}
+
+static void clear_present_all(class_bitset& bits, std::uint16_t class_words) {
+  for (std::uint16_t i = 0; i < class_words; ++i) bits[i] = 0;
+}
+
+static void clear_present_one(class_bitset& bits, std::uint16_t cid) {
+  bits[cid >> 6] &= ~(1ull << (cid & 63));
+}
+
+static bool overlaps_conflicts(const class_bitset& conflicts,
+                               const class_bitset& present,
+                               uint16_t class_words) {
+  for (uint16_t word_index = 0; word_index < class_words; word_index++) {
+    if ((conflicts[word_index] & present[word_index]) != 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static void pop_to(iddfs_ctx& ctx, size_t sz) {
+  while (ctx.path.size() > sz) {
+    const class_id cid = ctx.path.back();
+    clear_present_one(ctx.present_bits, cid.id);
+    ctx.path.pop_back();
+  }
+}
+
+static bool leaf_missing_coverage(iddfs_ctx& ctx, const semantic_state& state) {
+  if ((state.base_terms_mask & ctx.rules.goal_mask) != ctx.rules.goal_mask) {
+    ctx.prof.leaf_prune_missing_coverage.fetch_add(1, std::memory_order_relaxed);
+    return true;
+  }
+  return false;
+}
+
+static std::optional<class_id> leaf_unique_interesting_conclusion(iddfs_ctx& ctx, const semantic_state& state) {
+  ctx.prof.leaf_unique_scans.fetch_add(1, std::memory_order_relaxed);
+  leaf_ctx lctx{ctx.sem_space, ctx.present_bits, ctx.path, ctx.prof};
+  return ctx.rules.unique_interesting_conclusion(state, lctx);
+}
+
+static bool leaf_taste_banned(iddfs_ctx& ctx, class_id conc) {
+  if (ctx.rules.is_banned_with_path(conc, ctx.path)) {
+    ctx.prof.leaf_prune_taste_banned.fetch_add(1, std::memory_order_relaxed);
+    return true;
+  }
+  return false;
+}
+
+static void leaf_record_coverage(class_id conc) {
+  if (!has_solution[conc.id]) {
+    has_solution[conc.id] = 1;
+    ++covered;
+  }
+}
+
+static void leaf_emit_solution(iddfs_ctx& ctx,
+    class_id conc, const semantic_state& state) {
+  ctx.output.add_solution(ctx.tmp_key, ctx.syn_space.term_count, conc, ctx.path, state, ctx.sem_space,
+                      ctx.syn_space, ctx.tmp_ids, ctx.prof);
+}
+
+static bool handle_leaf(iddfs_ctx& ctx, const semantic_state& state) {
+  if (leaf_missing_coverage(ctx, state)) {
+    return false;
+  }
+
+  const std::optional<class_id> conc = leaf_unique_interesting_conclusion(
+      ctx, state);
+  if (!conc) {
+    ctx.prof.leaf_prune_no_unique_conclusion.fetch_add(1, std::memory_order_relaxed);
+    return false;
+  }
+
+  if (leaf_taste_banned(ctx, *conc)) {
+    return false;
+  }
+
+  leaf_record_coverage(*conc);
+  leaf_emit_solution(ctx, *conc, state);
+  return true;
+}
+
+struct descend_plan {
+  semantic_state child;
+  std::uint16_t next_min_id = 0;
+  std::uint8_t next_depth_left = 0;
+};
+
+// 1) cheap prune: conflicts vs present
+static bool conflict_prune(iddfs_ctx& ctx, class_id cid) {
+  if (overlaps_conflicts(ctx.rules.conflict_bits_by_cid[cid.id], ctx.present_bits,
+                         ctx.class_words)) {
+    ctx.prof.prune_conflict.fetch_add(1, std::memory_order_relaxed);
+    return true;
+  }
+  return false;
+}
+
+// 2) prepare child state + derived params
+static descend_plan init_descend_plan(const iddfs_frame& frame, class_id cid) {
+  descend_plan p{};
+  p.child = frame.state;
+  p.next_min_id = static_cast<std::uint16_t>(cid.id + 1);
+  p.next_depth_left = static_cast<std::uint8_t>(frame.depth_left - 1);
+  return p;
+}
+
+// 3) apply premise (records dead on inconsistency)
+static apply_result apply_premise_result(iddfs_ctx& ctx,
+                                         class_id cid, descend_plan& p) {
+  ctx.prof.apply_premise_calls.fetch_add(1, std::memory_order_relaxed);
+  apply_result add_premise_result = apply_premise(p.child, cid, ctx.sem_space);
+  if (add_premise_result == apply_result::inconsistent) {
+    ctx.memo_table.record_dead(p.child, ctx.syn_space, ctx.sem_space);
+    ctx.prof.prune_inconsistent.fetch_add(1, std::memory_order_relaxed);
+    return apply_result::inconsistent;
+  }
+  if(add_premise_result == apply_result::no_change)
+  {
+    ctx.prof.prune_no_change.fetch_add(1, std::memory_order_relaxed);
+    return apply_result::no_change;
+  }
+  return add_premise_result;
+}
+
+// 4) update base coverage, then state-memo prune
+static bool memo_prune_dead(iddfs_ctx& ctx, class_id cid,
+                            descend_plan& p) {
+  p.child.base_terms_mask |= ctx.rules.base_terms_mask_by_cid[cid.id];
+  if (ctx.memo_table.is_dead(p.child, ctx.syn_space, ctx.sem_space)) {
+    ctx.prof.prune_memo_dead.fetch_add(1, std::memory_order_relaxed);
+    return true;
+  }
+  return false;
+}
+
+// 5) dominance prune
+static bool dominance_prune(iddfs_ctx& ctx,
+                            const descend_plan& p) {
+  if (ctx.memo_table.should_prune_dominance(p.child, p.next_depth_left, ctx.syn_space,
+                                        ctx.sem_space)) {
+    ctx.prof.prune_dominance.fetch_add(1, std::memory_order_relaxed);
+    return true;
+  }
+  return false;
+}
+
+// Main: reads like the algorithm
+static bool try_descend(iddfs_ctx& ctx,
+                        const iddfs_frame& frame,
+                        class_id cid, semantic_state& child_state,
+                        std::uint16_t& next_min_id,
+                        std::uint8_t& next_depth_left) {
+  if (conflict_prune(ctx, cid)) {
+    return false;
+  }
+  descend_plan p = init_descend_plan(frame, cid);
+
+  if (apply_premise_result(ctx, cid, p) !=
+      apply_result::changed) {
+    return false;
+  }
+  if (memo_prune_dead(ctx, cid, p)) {
+    return false;
+  }
+  if (dominance_prune(ctx, p)) {
+    return false;
+  }
+  // commit outputs
+  child_state = p.child;
+  next_min_id = p.next_min_id;
+  next_depth_left = p.next_depth_left;
+  return true;
+}
+
+
+
+
 static void init_limit(iddfs_ctx& ctx, std::uint8_t limit,
                        const semantic_state& root) {
   ctx.prof.current_limit.store(limit, std::memory_order_relaxed);
@@ -340,7 +358,7 @@ static void init_limit(iddfs_ctx& ctx, std::uint8_t limit,
 static bool pop_if_done(iddfs_ctx& ctx) {
   iddfs_frame& f = ctx.frame_stack.back();
   if (f.next_cid >= ctx.class_count || f.depth_left == 0) {
-    pop_to(ctx.path, ctx.present_bits, f.path_size_before);
+    pop_to(ctx, f.path_size_before);
     ctx.frame_stack.pop_back();
     return true;
   }
@@ -351,7 +369,7 @@ static class_id next_candidate(iddfs_ctx& ctx, std::uint8_t limit) {
   iddfs_frame& f = ctx.frame_stack.back();
   const class_id cid{f.next_cid++};
 
-  ctx.prof.nodes_considered.fetch_add(1, std::memory_order_relaxed);
+  ctx.prof.candidates_considered.fetch_add(1, std::memory_order_relaxed);
   ctx.prof.nodes_by_limit[limit] += 1;
 
   return cid;
@@ -365,9 +383,8 @@ struct descend_out {
 
 static bool try_make_child(iddfs_ctx& ctx, const iddfs_frame& parent,
                            class_id cid, descend_out& out) {
-  return try_descend(ctx.rules, ctx.memo_table, ctx.syn_space, ctx.sem_space,
-                     ctx.present_bits, ctx.class_words, parent, cid, out.child,
-                     out.next_min_id, out.next_depth_left, ctx.prof);
+  return try_descend(ctx, parent, cid, out.child,
+                     out.next_min_id, out.next_depth_left);
 }
 
 static std::size_t push_premise(iddfs_ctx& ctx, class_id cid) {
@@ -384,15 +401,13 @@ static void undo_premise(iddfs_ctx& ctx, class_id cid) {
 
 static void handle_leaf_node(iddfs_ctx& ctx, std::uint8_t limit, class_id cid,
                              const semantic_state& child) {
-  ctx.prof.leaf_reached.fetch_add(1, std::memory_order_relaxed);
+  ctx.prof.leaves_reached.fetch_add(1, std::memory_order_relaxed);
   ctx.prof.leaves_by_limit[limit] += 1;
 
   const std::size_t k = ctx.path.size();
   if (k < ctx.prof.leaves_by_k.size()) ctx.prof.leaves_by_k[k] += 1;
 
-  if (handle_leaf(ctx.tmp_key, ctx.rules, ctx.sem_space, ctx.syn_space,
-                  ctx.present_bits, ctx.output, child, ctx.path, ctx.prof,
-                  ctx.tmp_ids)) {
+  if (handle_leaf(ctx, child)) {
     ctx.prof.solutions_emitted.fetch_add(1, std::memory_order_relaxed);
     ctx.prof.solutions_by_limit[limit] += 1;
     if (k < ctx.prof.solutions_by_k.size()) ctx.prof.solutions_by_k[k] += 1;
@@ -407,7 +422,7 @@ static bool should_expand_or_undo(iddfs_ctx& ctx, class_id cid,
                                   std::uint8_t next_depth_left) {
   if (!ctx.rules.should_expand(child, next_min_id, next_depth_left,
                                ctx.sem_space)) {
-    ctx.prof.should_expand_pruned.fetch_add(1, std::memory_order_relaxed);
+    ctx.prof.prune_should_expand.fetch_add(1, std::memory_order_relaxed);
     undo_premise(ctx, cid);
     return false;
   }
@@ -421,7 +436,7 @@ static bool premise_seen_or_undo(iddfs_ctx& ctx, class_id cid,
 
   if (auto it = ctx.premise_seen.find(ctx.pkey); it != ctx.premise_seen.end()) {
     if (next_depth_left <= static_cast<std::uint8_t>(it->second)) {
-      ctx.prof.memo_pruned.fetch_add(1, std::memory_order_relaxed);
+      ctx.prof.prune_premise_seen.fetch_add(1, std::memory_order_relaxed);
       undo_premise(ctx, cid);
       return false;
     }
@@ -456,10 +471,11 @@ static void step(iddfs_ctx& ctx, std::uint8_t limit,
   if (pop_if_done(ctx)) return;
 
   iddfs_frame& curr = ctx.frame_stack.back();
-  const class_id cid = next_candidate(ctx, limit);
+  const class_id cid = next_candidate(ctx, limit);;
 
   descend_out d{};
   if (!try_make_child(ctx, curr, cid, d)) return;
+  ctx.prof.descended.fetch_add(1, std::memory_order_relaxed);
 
   const std::size_t parent_path_size = push_premise(ctx, cid);
 
@@ -477,6 +493,7 @@ static void step(iddfs_ctx& ctx, std::uint8_t limit,
     return;
   }
   push_child_frame(ctx, d, d.next_min_id, d.next_depth_left, parent_path_size);
+
 }
 
 static bool finish_limit(iddfs_ctx& ctx, std::uint8_t limit,
@@ -544,11 +561,11 @@ void run_iddfs(const semantic_space& sem_space, const syntax_space& syn_space,
   ctx.tmp_key.ids.reserve(static_cast<std::size_t>(max_depth) + 1);
 
   const std::uint8_t start_limit =
-      std::max<std::uint8_t>(2, syn_space.term_count - 1);
+      std::max<std::uint8_t>(2, ctx.syn_space.term_count - 1);
 
   for (std::uint8_t limit = start_limit; limit <= max_depth; ++limit) {
     const std::uint64_t solutions_before =
-        prof.solutions_emitted.load(std::memory_order_relaxed);
+        ctx.prof.solutions_emitted.load(std::memory_order_relaxed);
 
     init_limit(ctx, limit, root);
     if (stop_requested()) {

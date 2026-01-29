@@ -73,13 +73,13 @@ static void build_statements(syntax_space& syn_space) {
             }
 
             statement stmt{form_type, subject_literal, predicate_literal};
-            syn_space.all_statements.push_back(stmt);
+            syn_space.all_statements_by_id.push_back(stmt);
 
             statement canon_statement =
                 syn_space.canonical_equiv_statement(stmt);
 
             const statement_id sid{static_cast<std::uint16_t>(
-                syn_space.all_statements.size() - 1)};
+                syn_space.all_statements_by_id.size() - 1)};
 
             const class_id cid = get_or_create_class_id(
                 canon_statement, class_id_by_canon, syn_space, sid);
@@ -99,7 +99,7 @@ static void build_rep_statement_by_class_id(syntax_space& syn_space) {
   for (class_id cid{0}; cid.id < syn_space.rep_id_by_class_id.size();
        cid.id++) {
     syn_space.rep_statement_by_class_id.push_back(
-        syn_space.all_statements[syn_space.rep_id_by_class_id[cid.id].id]);
+        syn_space.all_statements_by_id[syn_space.rep_id_by_class_id[cid.id].id]);
   }
 }
 
@@ -128,7 +128,7 @@ syntax_space build_syntax_space(const std::uint8_t term_count) {
 
   // DEBUG
   assert(syn_space.class_id_by_statement_id.size() ==
-         syn_space.all_statements.size());
+         syn_space.all_statements_by_id.size());
   assert(syn_space.rep_id_by_class_id.size() < 65535);
   assert(syn_space.rep_id_by_class_id.size() ==
          syn_space.rep_statement_by_class_id.size());

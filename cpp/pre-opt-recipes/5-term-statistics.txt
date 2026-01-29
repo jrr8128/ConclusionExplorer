@@ -1,0 +1,44 @@
+[run]
+elapsed 28.391s
+term_count 5
+max_depth 6
+
+[sizes]
+premise_seen_size 10772
+premise_seen_buckets 1048576
+
+[totals]
+nodes_considered 184190
+solutions_emitted 132
+solutions_accepted 104
+max_stack_depth_observed 5
+
+[leaf]
+reached 132945
+missing_coverage 28542
+non_unique 104271
+taste_banned 0
+
+[conclusion_filters]
+redundant 513794
+partial 440757
+too_many 64
+
+[prune]
+conflicts 28516
+inconsistent 2711
+memo 7994
+should_expand 0
+
+[optional]
+apply_calls 155674
+entails_calls 8659922
+unique_conclusion_scans 104403
+
+[by_limit]
+4 nodes 19724 leaves 14989 solutions 132
+5 nodes 164466 leaves 117956 solutions 0
+
+[by_k]
+4 leaves 14989 solutions 132
+5 leaves 117956 solutions 0

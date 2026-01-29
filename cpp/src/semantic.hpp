@@ -29,6 +29,10 @@ struct semantic_space {
   std::vector<region_mask> forbid_mask_by_class_id;
   std::vector<std::int16_t> req_index_by_class_id;
   std::vector<constraint_kind> kind_by_class_id;
+
+  std::vector<class_id> forbid_cids;
+  std::vector<class_id> req_conc_cids;
+  
   std::vector<region_mask> req_mask_by_req_index;
   std::uint8_t req_words;
   std::uint16_t req_count;
@@ -37,6 +41,7 @@ struct semantic_space {
   std::vector<std::uint16_t> permuted_region_index_by_perm_and_region;
   std::uint16_t permuted_req(std::size_t perm_i, std::uint16_t req) const;
   std::uint16_t permuted_region(std::size_t perm_i, std::uint16_t region) const;
+
 };
 
 bool region_is_empty(const region_mask&, std::uint8_t active_words);

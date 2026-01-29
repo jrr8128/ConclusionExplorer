@@ -1,39 +1,38 @@
 [run]
-elapsed 28.391s
+elapsed 2.690s
 term_count 5
 max_depth 6
-
-[sizes]
-premise_seen_size 10772
-premise_seen_buckets 1048576
-
-[totals]
-nodes_considered 184190
-solutions_emitted 132
-solutions_accepted 104
 max_stack_depth_observed 5
 
-[leaf]
-reached 132945
-missing_coverage 28542
-non_unique 104271
-taste_banned 0
+[flow summary / survival rates per stage]
+stage                  count    %all   %prev
+0. candidates         184190   100.0       -
+1. preleaf            144599   78.5%   78.5%
+2. leaf_reached       132945   72.2%   91.9%
+3. solutions_found       132  0.072%  0.099%
+4. sols recorded         104  0.056%   78.8%
 
-[conclusion_filters]
-redundant 513794
-partial 440757
-too_many 64
+[preleaf_prune | try_descend]
+1. conflict 28516
+2. no_change 370
+3. inconsistent 2711
+4. memo_dead 0
+5. dominance 7994
+6. should_expand 0
+7. premise_seen 0
 
-[prune]
-conflicts 28516
-inconsistent 2711
-memo 7994
-should_expand 0
+[leaf_prune | handle_leaf]
+1. missing_coverage 28542
+2. no_unique_conclusion 104271
+3. taste_banned 0
+4. requires_all_failed 440757
+5. too_many_conclusions 64
+6. already_present 513794
 
-[optional]
-apply_calls 155674
-entails_calls 8659922
-unique_conclusion_scans 104403
+[workload]
+apply_premise_calls 155674
+entails_calls 822614
+leaf_unique_scans 104403
 
 [by_limit]
 4 nodes 19724 leaves 14989 solutions 132
