@@ -43,7 +43,6 @@ void profiler::begin_term_run(std::uint8_t term_count, std::uint8_t max_depth) {
   solutions_emitted.store(0, std::memory_order_relaxed);
   solutions_accepted.store(0, std::memory_order_relaxed);
 
-
   apply_premise_calls.store(0, std::memory_order_relaxed);
   entails_calls.store(0, std::memory_order_relaxed);
   leaf_unique_scans.store(0, std::memory_order_relaxed);
@@ -56,6 +55,16 @@ void profiler::begin_term_run(std::uint8_t term_count, std::uint8_t max_depth) {
   // k is in [0..max_depth]
   leaves_by_k.assign(static_cast<std::size_t>(max_depth) + 1, 0);
   solutions_by_k.assign(static_cast<std::size_t>(max_depth) + 1, 0);
+
+  rate_window_ms = 4000;
+  rate_acc_ms = 0;
+  rate_acc_nodes = 0;
+  last_snapshot_ms = 0;
+  last_snapshot_nodes = 0;
+  last_rate = 0.0;
+  min_rate = 0.0;
+  max_rate = 0.0;
+  rate_initialized = false;
 }
 
 void profiler::end_term_run() { end_time = std::chrono::steady_clock::now(); }
@@ -90,45 +99,62 @@ void profiler::write_stats_file(std::uint8_t term_count,
     return a.load(std::memory_order_relaxed);
   };
 
+  const auto elapsed_ms_total = elapsed_ms();
+  const double elapsed_s_total =
+      elapsed_ms_total > 0 ? (double(elapsed_ms_total) / 1000.0) : 0.0;
+  const auto nodes = load64(candidates_considered);
+  const double nodes_per_sec_avg =
+      elapsed_s_total > 0 ? (double(nodes) / elapsed_s_total) : 0.0;
+
   out << "[run]\n";
-  out << "elapsed " << format_elapsed_ms(elapsed_ms()) << "\n";
   out << "term_count " << int(term_count) << "\n";
   out << "max_depth " << int(max_depth) << "\n";
-  out << "max_stack_depth_observed " << load64(max_stack_depth_observed) << "\n\n";
+  out << "max_stack_depth_observed " << load64(max_stack_depth_observed)
+      << "\n\n";
+  out << "[time]\n";
+  out << "elapsed " << format_elapsed_ms(elapsed_ms()) << "\n";
+  out << "avg nodes/s " << nodes_per_sec_avg << "\n";
+  if (rate_initialized) {
+    if (min_rate > 0) {
+      out << "node/s low " << min_rate << "\n";
+    }
+    if (max_rate > 0) {
+      out << "nodes/s hi " << max_rate << "\n";
+    }
+  }
+  out << "\n";
 
   out << "[flow summary / survival rates per stage]\n";
-  out << std::left << std::setw(18) << "stage"
-      << std::right << std::setw(10) << "count"
-      << std::setw(8) << "%all"
-      << std::setw(8) << "%prev" << "\n";
+  out << std::left << std::setw(18) << "stage" << std::right << std::setw(10)
+      << "count" << std::setw(8) << "%all" << std::setw(8) << "%prev" << "\n";
 
-  out << std::left << std::setw(18) << "0. candidates"
-    << std::right << std::setw(10) << load64(candidates_considered)
-    << std::setw(8) << "100.0"
-    << std::setw(8) << "-" << "\n";
+  out << std::left << std::setw(18) << "0. candidates" << std::right
+      << std::setw(10) << load64(candidates_considered) << std::setw(8)
+      << "100.0" << std::setw(8) << "-" << "\n";
 
-  out << std::left << std::setw(18) << "1. preleaf"
-      << std::right << std::setw(10) << load64(descended)
-      << std::setw(8) << pct_str(load64(descended), load64(candidates_considered))
-      << std::setw(8) << pct_str(load64(descended), load64(candidates_considered))
-      << "\n";
+  out << std::left << std::setw(18) << "1. preleaf" << std::right
+      << std::setw(10) << load64(descended) << std::setw(8)
+      << pct_str(load64(descended), load64(candidates_considered))
+      << std::setw(8)
+      << pct_str(load64(descended), load64(candidates_considered)) << "\n";
 
-  out << std::left << std::setw(18) << "2. leaf_reached"
-      << std::right << std::setw(10) << load64(leaves_reached)
-      << std::setw(8) << pct_str(load64(leaves_reached), load64(candidates_considered))
+  out << std::left << std::setw(18) << "2. leaf_reached" << std::right
+      << std::setw(10) << load64(leaves_reached) << std::setw(8)
+      << pct_str(load64(leaves_reached), load64(candidates_considered))
       << std::setw(8) << pct_str(load64(leaves_reached), load64(descended))
       << "\n";
 
-  out << std::left << std::setw(18) << "3. solutions_found"
-      << std::right << std::setw(10) << load64(solutions_emitted)
-      << std::setw(8) << pct_str(load64(solutions_emitted), load64(candidates_considered))
-      << std::setw(8) << pct_str(load64(solutions_emitted), load64(leaves_reached))
-      << "\n";
+  out << std::left << std::setw(18) << "3. solutions_found" << std::right
+      << std::setw(10) << load64(solutions_emitted) << std::setw(8)
+      << pct_str(load64(solutions_emitted), load64(candidates_considered))
+      << std::setw(8)
+      << pct_str(load64(solutions_emitted), load64(leaves_reached)) << "\n";
 
-  out << std::left << std::setw(18) << "4. sols recorded"
-      << std::right << std::setw(10) << load64(solutions_accepted)
-      << std::setw(8) << pct_str(load64(solutions_accepted), load64(candidates_considered))
-      << std::setw(8) << pct_str(load64(solutions_accepted), load64(solutions_emitted))
+  out << std::left << std::setw(18) << "4. sols recorded" << std::right
+      << std::setw(10) << load64(solutions_accepted) << std::setw(8)
+      << pct_str(load64(solutions_accepted), load64(candidates_considered))
+      << std::setw(8)
+      << pct_str(load64(solutions_accepted), load64(solutions_emitted))
       << "\n\n";
 
   out << "[preleaf_prune | try_descend]\n";
@@ -136,17 +162,20 @@ void profiler::write_stats_file(std::uint8_t term_count,
   out << "2. no_change " << load64(prune_no_change) << "\n";
   out << "3. inconsistent " << load64(prune_inconsistent) << "\n";
   out << "4. memo_dead " << load64(prune_memo_dead) << "\n";
-  out << "5. dominance " << load64(prune_dominance) << "\n";
-  out << "6. should_expand " << load64(prune_should_expand) << "\n";
-  out << "7. premise_seen " << load64(prune_premise_seen) << "\n\n";
+  out << "5. dominance " << load64(prune_dominance) << "\n\n";
+  // out << "6. should_expand " << load64(prune_should_expand) << "\n\n";
+  //  out << "7. premise_seen " << load64(prune_premise_seen) << "\n\n";
 
   out << "[leaf_prune | handle_leaf]\n";
   out << "1. missing_coverage " << load64(leaf_prune_missing_coverage) << "\n";
-  out << "2. no_unique_conclusion " << load64(leaf_prune_no_unique_conclusion) << "\n";
-  out << "3. taste_banned " << load64(leaf_prune_taste_banned) << "\n";
-  out << "4. requires_all_failed " << load64(leaf_prune_requires_all_failed) << "\n";
-  out << "5. too_many_conclusions " << load64(leaf_prune_too_many_conclusions) << "\n";
-  out << "6. already_present " << load64(leaf_prune_present) << "\n\n";
+  out << "2. no_unique_conclusion " << load64(leaf_prune_no_unique_conclusion)
+      << "\n";
+  // out << "3. taste_banned " << load64(leaf_prune_taste_banned) << "\n";
+  out << "3. requires_all_failed " << load64(leaf_prune_requires_all_failed)
+      << "\n";
+  out << "4. too_many_conclusions " << load64(leaf_prune_too_many_conclusions)
+      << "\n";
+  out << "5. already_present " << load64(leaf_prune_present) << "\n\n";
 
   out << "[workload]\n";
   out << "apply_premise_calls " << load64(apply_premise_calls) << "\n";
@@ -171,6 +200,5 @@ void profiler::write_stats_file(std::uint8_t term_count,
         << solutions_by_k[k] << "\n";
   }
 }
-
 
 }  // namespace conclusion_explorer

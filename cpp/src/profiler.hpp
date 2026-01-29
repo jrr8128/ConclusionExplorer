@@ -1,11 +1,11 @@
 #pragma once
+#include <atomic>
 #include <chrono>
 #include <cstdint>
-#include <string>
-#include <vector>
-#include <atomic>
 #include <iomanip>
 #include <sstream>
+#include <string>
+#include <vector>
 
 namespace conclusion_explorer {
 
@@ -39,12 +39,12 @@ struct profiler {
   std::atomic<std::uint8_t> current_limit{0};
   std::atomic<std::size_t> current_stack_size{0};
 
-  //flow
+  // flow
   std::atomic<std::uint64_t> candidates_considered{0};
   std::atomic<std::uint64_t> descended{0};
   std::atomic<std::uint64_t> leaves_reached{0};
 
-  //preleaf prune
+  // preleaf prune
   std::atomic<std::uint64_t> prune_conflict{0};
   std::atomic<std::uint64_t> prune_no_change{0};
   std::atomic<std::uint64_t> prune_inconsistent{0};
@@ -53,7 +53,7 @@ struct profiler {
   std::atomic<std::uint64_t> prune_should_expand{0};
   std::atomic<std::uint64_t> prune_premise_seen{0};
 
-  //leaf prune
+  // leaf prune
   std::atomic<std::uint64_t> leaf_prune_missing_coverage{0};
   std::atomic<std::uint64_t> leaf_prune_no_unique_conclusion{0};
   std::atomic<std::uint64_t> leaf_prune_taste_banned{0};
@@ -61,11 +61,9 @@ struct profiler {
   std::atomic<std::uint64_t> leaf_prune_requires_all_failed{0};
   std::atomic<std::uint64_t> leaf_prune_too_many_conclusions{0};
 
-  //outcomes
+  // outcomes
   std::atomic<std::uint64_t> solutions_emitted{0};
   std::atomic<std::uint64_t> solutions_accepted{0};
-
-
 
   // workload
   std::atomic<std::uint64_t> apply_premise_calls{0};
@@ -93,6 +91,18 @@ struct profiler {
 
   void write_stats_file(std::uint8_t term_count, std::uint8_t max_depth) const;
   void print_snapshot() const;
+
+  // snapshot rate tracking (mutable so print_snapshot() can update)
+  mutable std::uint64_t rate_window_ms = 4000;
+  mutable std::uint64_t rate_acc_ms = 0;
+  mutable std::uint64_t rate_acc_nodes = 0;
+  mutable std::uint64_t last_snapshot_ms = 0;
+  mutable std::uint64_t last_snapshot_nodes = 0;
+  mutable double last_rate = 0.0;
+  mutable double min_rate = 0.0;
+  mutable double max_rate = 0.0;
+  mutable bool rate_initialized = false;
+
   // config (optional; set from main)
   std::string output_root = "recipes";  // where stats file is written
 };

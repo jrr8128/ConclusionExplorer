@@ -12,4 +12,10 @@ file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
 add_executable(app ${APP_SOURCES})
 target_include_directories(app PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
+# Enable LTO/IPO for Release
+set_property(TARGET app PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
+# CPU‑specific tuning (per‑machine build)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  target_compile_options(app PRIVATE $<$<CONFIG:Release>:-march=native>)
+endif()

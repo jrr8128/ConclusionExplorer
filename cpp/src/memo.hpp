@@ -29,12 +29,17 @@ struct memo {
 
   bool should_prune_dominance(const semantic_state&, std::uint8_t depth_leth,
                               const syntax_space&, const semantic_space&) const;
+  bool should_prune_dominance_key(const canonical_key&, std::uint8_t depth_left,
+                                  const semantic_space&) const;
 
   void record_dominance(const semantic_state&, std::uint8_t depth_left,
                         const syntax_space&, const semantic_space&);
-
+  void record_dominance_key(const canonical_key&, std::uint8_t depth_left,
+                            const semantic_space&);
   bool is_dead(const semantic_state&, const syntax_space&,
                const semantic_space&) const;
+  bool is_dead_key(const canonical_key&) const;
+
   void record_dead(const semantic_state&, const syntax_space&,
                    const semantic_space&);
 };

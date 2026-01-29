@@ -38,7 +38,7 @@ static void live_printer(std::stop_token st,
       p.print_snapshot();
     }
 
-    std::this_thread::sleep_for(100ms);  // responsiveness to epoch bumps
+    std::this_thread::sleep_for(2000ms);  // responsiveness to epoch bumps
   }
 }
 

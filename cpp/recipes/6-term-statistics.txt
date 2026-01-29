@@ -1,0 +1,45 @@
+[run]
+term_count 6
+max_depth 7
+max_stack_depth_observed 6
+
+[time]
+elapsed 666.095s
+avg nodes/s 6329.33
+node/s low 3160.44
+nodes/s hi 11780.6
+
+[flow summary / survival rates per stage]
+stage                  count    %all   %prev
+0. candidates        4215936   100.0       -
+1. preleaf           3492361   82.8%   82.8%
+2. leaf_reached      3272362   77.6%   93.7%
+3. solutions_found       472  0.011%  0.014%
+4. sols recorded         384  0.009%   81.4%
+
+[preleaf_prune | try_descend]
+1. conflict 539300
+2. no_change 2846
+3. inconsistent 48667
+4. memo_dead 61
+5. dominance 132701
+
+[leaf_prune | handle_leaf]
+1. missing_coverage 1106168
+2. no_unique_conclusion 2165722
+3. requires_all_failed 12655885
+4. too_many_conclusions 132
+5. already_present 12871868
+
+[workload]
+apply_premise_calls 3676636
+entails_calls 22522566
+leaf_unique_scans 2166194
+
+[by_limit]
+5 nodes 361426 leaves 289947 solutions 472
+6 nodes 3854510 leaves 2982415 solutions 0
+
+[by_k]
+5 leaves 289947 solutions 472
+6 leaves 2982415 solutions 0

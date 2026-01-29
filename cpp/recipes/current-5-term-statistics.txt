@@ -1,11 +1,8 @@
 [run]
+elapsed 2.690s
 term_count 5
 max_depth 6
 max_stack_depth_observed 5
-
-[time]
-elapsed 1.206s
-avg nodes/s 152728
 
 [flow summary / survival rates per stage]
 stage                  count    %all   %prev
@@ -21,13 +18,16 @@ stage                  count    %all   %prev
 3. inconsistent 2711
 4. memo_dead 0
 5. dominance 7994
+6. should_expand 0
+7. premise_seen 0
 
 [leaf_prune | handle_leaf]
 1. missing_coverage 28542
 2. no_unique_conclusion 104271
-3. requires_all_failed 440757
-4. too_many_conclusions 64
-5. already_present 513794
+3. taste_banned 0
+4. requires_all_failed 440757
+5. too_many_conclusions 64
+6. already_present 513794
 
 [workload]
 apply_premise_calls 155674

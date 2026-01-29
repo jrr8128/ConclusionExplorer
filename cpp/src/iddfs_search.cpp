@@ -2,11 +2,10 @@
 
 #include <atomic>
 #include <csignal>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <unordered_map>
-
 
 namespace conclusion_explorer {
 
@@ -45,7 +44,6 @@ struct premise_bitset_key_eq {
   }
 };
 
-
 struct iddfs_frame {
   semantic_state state;
   uint16_t next_cid;
@@ -57,8 +55,7 @@ using premise_seen_map =
     std::unordered_map<premise_bitset_key, std::int16_t,
                        premise_bitset_key_hash, premise_bitset_key_eq>;
 
-
-  struct iddfs_ctx {
+struct iddfs_ctx {
   // inputs
   const semantic_space& sem_space;
   const syntax_space& syn_space;
@@ -84,27 +81,56 @@ using premise_seen_map =
   premise_bitset_key tmp_pkey{};
 };
 
-
-
-
 void profiler::print_snapshot() const {
   const auto limit = current_limit.load(std::memory_order_relaxed);
   const auto stack = current_stack_size.load(std::memory_order_relaxed);
   const auto ps = premise_seen_size.load(std::memory_order_relaxed);
 
   const auto nodes = candidates_considered.load(std::memory_order_relaxed);
+
+  double snap_rate = last_rate;
+
+  if (!rate_initialized) {
+    rate_initialized = true;
+    last_snapshot_ms = elapsed_ms();
+    last_snapshot_nodes = nodes;
+  } else {
+    const auto now_ms = elapsed_ms();
+    const auto delta_ms = now_ms - last_snapshot_ms;
+    const auto delta_nodes = nodes - last_snapshot_nodes;
+    last_snapshot_ms = now_ms;
+    last_snapshot_nodes = nodes;
+
+    rate_acc_ms += delta_ms;
+    rate_acc_nodes += delta_nodes;
+
+    if (rate_acc_ms >= rate_window_ms && rate_acc_ms > 0) {
+      last_rate = (double(rate_acc_nodes) * 1000.0) / double(rate_acc_ms);
+      snap_rate = last_rate;
+      rate_acc_ms = 0;
+      rate_acc_nodes = 0;
+
+      if (min_rate == 0.0 || last_rate < min_rate) min_rate = last_rate;
+      if (last_rate > max_rate) max_rate = last_rate;
+    }
+  }
+
   const auto desc = descended.load(std::memory_order_relaxed);
   const auto leaves = leaves_reached.load(std::memory_order_relaxed);
   const auto sol = solutions_emitted.load(std::memory_order_relaxed);
   const auto sol2 = solutions_accepted.load(std::memory_order_relaxed);
 
-  const auto leaf_cov = leaf_prune_missing_coverage.load(std::memory_order_relaxed);
-  const auto leaf_uniq = leaf_prune_no_unique_conclusion.load(std::memory_order_relaxed);
+  const auto leaf_cov =
+      leaf_prune_missing_coverage.load(std::memory_order_relaxed);
+  const auto leaf_uniq =
+      leaf_prune_no_unique_conclusion.load(std::memory_order_relaxed);
   const auto leaf_bt = leaf_prune_taste_banned.load(std::memory_order_relaxed);
 
   const auto conc_present = leaf_prune_present.load(std::memory_order_relaxed);
-  const auto conc_reqall = leaf_prune_requires_all_failed.load(std::memory_order_relaxed);
-  const auto conc_toomany = leaf_prune_too_many_conclusions.load(std::memory_order_relaxed);
+  const auto conc_reqall =
+      leaf_prune_requires_all_failed.load(std::memory_order_relaxed);
+  const auto conc_toomany =
+      leaf_prune_too_many_conclusions.load(std::memory_order_relaxed);
 
   const auto pr_conf = prune_conflict.load(std::memory_order_relaxed);
   const auto pr_nc = prune_no_change.load(std::memory_order_relaxed);
@@ -118,46 +144,45 @@ void profiler::print_snapshot() const {
     return den ? (100.0 * double(num) / double(den)) : 0.0;
   };
 
+  const auto elapsed = elapsed_ms();
+  const double elapsed_s = elapsed > 0 ? (double(elapsed) / 1000.0) : 0.0;
+  const double nodes_per_sec =
+      elapsed_s > 0.0 ? (double(nodes) / elapsed_s) : 0.0;
+
   const auto old_flags = std::cout.flags();
   const auto old_prec = std::cout.precision();
   std::cout << std::fixed << std::setprecision(1);
 
-  std::cout << "t=" << format_elapsed_ms(elapsed_ms())
-            << "  d=" << int(limit)
-            << "  stack=" << stack
-            << "  nodes=" << nodes
-            << "  seen=" << ps
+  std::cout << "t=" << format_elapsed_ms(elapsed) << "  d=" << int(limit)
+            << "  stack=" << stack << "  nodes=" << nodes << "  nodes/s="
+            << snap_rate
+            //<< "  seen=" << ps
             << "  leaf=" << leaves << "\n"
-            << "leaf:   reached=" << leaves
-            << "  miss_cov=" << leaf_cov
-            << "  nonuniq=" << leaf_uniq
-            << "  taste=" << leaf_bt
-            << "  sol: emit=" << sol
-            << "  accept=" << sol2 << "\n"
-            << "conc:   present=" << conc_present
-            << "  reqall=" << conc_reqall
+            << "leaf:   reached=" << leaves << "  miss_cov=" << leaf_cov
+            << "  nonuniq="
+            << leaf_uniq
+            //<< "  taste=" << leaf_bt
+            << "  sol: emit=" << sol << "  accept=" << sol2 << "\n"
+            << "conc:   present=" << conc_present << "  reqall=" << conc_reqall
             << "  >1=" << conc_toomany << "\n"
-            << "prune:  conf=" << pr_conf
-            << "  nochg=" << pr_nc
-            << "  inc=" << pr_inc
-            << "  dead=" << pr_dead
-            << "  dom=" << pr_dom
-            << "  se=" << pr_se
-            << "  seen=" << pr_seen << "\n"
-            << "check stage survival rates: "
-            << "preleaf=" << pct_str(desc, nodes) << " of cons | "
-            << "leaf=" << pct_str(leaves, nodes) << " overall, "
-            << pct_str(leaves, desc) << " of preleaf | "
-            << "final=" << pct_str(sol, nodes) << " overall, "
-            << pct_str(sol, leaves) << " of leaf | "
-            << "recorded=" << pct_str(sol2, nodes) << " overall, "
-            << pct_str(sol2, sol) << " of final\n";
-
+            << "prune:  conf=" << pr_conf << "  nochg=" << pr_nc
+            << "  inc=" << pr_inc << "  dead=" << pr_dead << "  dom="
+            << pr_dom
+            //<< "  se=" << pr_se
+            //<< "  seen=" << pr_seen
+            << "\n"
+            << "survival rates: "
+            << "preleaf=" << pct_str(desc, nodes) << " cons | "
+            << "leaf=" << pct_str(leaves, nodes) << " total, "
+            << pct_str(leaves, desc) << " preleaf | "
+            << "final=" << pct_str(sol, nodes) << " total, "
+            << pct_str(sol, leaves) << " leaf | "
+            << "recorded=" << pct_str(sol2, nodes) << " total, "
+            << pct_str(sol2, sol) << " final\n";
 
   std::cout.flags(old_flags);
   std::cout.precision(old_prec);
 }
-
 
 static void set_present(class_bitset& bits, uint16_t cid) {
   bits[cid >> 6] |= (1ull << (cid & 63));
@@ -192,13 +217,15 @@ static void pop_to(iddfs_ctx& ctx, size_t sz) {
 
 static bool leaf_missing_coverage(iddfs_ctx& ctx, const semantic_state& state) {
   if ((state.base_terms_mask & ctx.rules.goal_mask) != ctx.rules.goal_mask) {
-    ctx.prof.leaf_prune_missing_coverage.fetch_add(1, std::memory_order_relaxed);
+    ctx.prof.leaf_prune_missing_coverage.fetch_add(1,
+                                                   std::memory_order_relaxed);
     return true;
   }
   return false;
 }
 
-static std::optional<class_id> leaf_unique_interesting_conclusion(iddfs_ctx& ctx, const semantic_state& state) {
+static std::optional<class_id> leaf_unique_interesting_conclusion(
+    iddfs_ctx& ctx, const semantic_state& state) {
   ctx.prof.leaf_unique_scans.fetch_add(1, std::memory_order_relaxed);
   leaf_ctx lctx{ctx.sem_space, ctx.present_bits, ctx.path, ctx.prof};
   return ctx.rules.unique_interesting_conclusion(state, lctx);
@@ -219,10 +246,11 @@ static void leaf_record_coverage(class_id conc) {
   }
 }
 
-static void leaf_emit_solution(iddfs_ctx& ctx,
-    class_id conc, const semantic_state& state) {
-  ctx.output.add_solution(ctx.tmp_key, ctx.syn_space.term_count, conc, ctx.path, state, ctx.sem_space,
-                      ctx.syn_space, ctx.tmp_ids, ctx.prof);
+static void leaf_emit_solution(iddfs_ctx& ctx, class_id conc,
+                               const semantic_state& state) {
+  ctx.output.add_solution(ctx.tmp_key, ctx.syn_space.term_count, conc, ctx.path,
+                          state, ctx.sem_space, ctx.syn_space, ctx.tmp_ids,
+                          ctx.prof);
 }
 
 static bool handle_leaf(iddfs_ctx& ctx, const semantic_state& state) {
@@ -230,16 +258,17 @@ static bool handle_leaf(iddfs_ctx& ctx, const semantic_state& state) {
     return false;
   }
 
-  const std::optional<class_id> conc = leaf_unique_interesting_conclusion(
-      ctx, state);
+  const std::optional<class_id> conc =
+      leaf_unique_interesting_conclusion(ctx, state);
   if (!conc) {
-    ctx.prof.leaf_prune_no_unique_conclusion.fetch_add(1, std::memory_order_relaxed);
+    ctx.prof.leaf_prune_no_unique_conclusion.fetch_add(
+        1, std::memory_order_relaxed);
     return false;
   }
 
-  if (leaf_taste_banned(ctx, *conc)) {
-    return false;
-  }
+  // if (leaf_taste_banned(ctx, *conc)) {
+  //   return false;
+  // }
 
   leaf_record_coverage(*conc);
   leaf_emit_solution(ctx, *conc, state);
@@ -250,12 +279,13 @@ struct descend_plan {
   semantic_state child;
   std::uint16_t next_min_id = 0;
   std::uint8_t next_depth_left = 0;
+  canonical_key iso_key{};
 };
 
 // 1) cheap prune: conflicts vs present
 static bool conflict_prune(iddfs_ctx& ctx, class_id cid) {
-  if (overlaps_conflicts(ctx.rules.conflict_bits_by_cid[cid.id], ctx.present_bits,
-                         ctx.class_words)) {
+  if (overlaps_conflicts(ctx.rules.conflict_bits_by_cid[cid.id],
+                         ctx.present_bits, ctx.class_words)) {
     ctx.prof.prune_conflict.fetch_add(1, std::memory_order_relaxed);
     return true;
   }
@@ -272,8 +302,8 @@ static descend_plan init_descend_plan(const iddfs_frame& frame, class_id cid) {
 }
 
 // 3) apply premise (records dead on inconsistency)
-static apply_result apply_premise_result(iddfs_ctx& ctx,
-                                         class_id cid, descend_plan& p) {
+static apply_result apply_premise_result(iddfs_ctx& ctx, class_id cid,
+                                         descend_plan& p) {
   ctx.prof.apply_premise_calls.fetch_add(1, std::memory_order_relaxed);
   apply_result add_premise_result = apply_premise(p.child, cid, ctx.sem_space);
   if (add_premise_result == apply_result::inconsistent) {
@@ -281,8 +311,7 @@ static apply_result apply_premise_result(iddfs_ctx& ctx,
     ctx.prof.prune_inconsistent.fetch_add(1, std::memory_order_relaxed);
     return apply_result::inconsistent;
   }
-  if(add_premise_result == apply_result::no_change)
-  {
+  if (add_premise_result == apply_result::no_change) {
     ctx.prof.prune_no_change.fetch_add(1, std::memory_order_relaxed);
     return apply_result::no_change;
   }
@@ -290,10 +319,11 @@ static apply_result apply_premise_result(iddfs_ctx& ctx,
 }
 
 // 4) update base coverage, then state-memo prune
-static bool memo_prune_dead(iddfs_ctx& ctx, class_id cid,
-                            descend_plan& p) {
+static bool memo_prune_dead(iddfs_ctx& ctx, class_id cid, descend_plan& p) {
   p.child.base_terms_mask |= ctx.rules.base_terms_mask_by_cid[cid.id];
-  if (ctx.memo_table.is_dead(p.child, ctx.syn_space, ctx.sem_space)) {
+  p.iso_key =
+      ctx.memo_table.c.make_iso_key(p.child, ctx.syn_space, ctx.sem_space);
+  if (ctx.memo_table.is_dead_key(p.iso_key)) {
     ctx.prof.prune_memo_dead.fetch_add(1, std::memory_order_relaxed);
     return true;
   }
@@ -301,10 +331,9 @@ static bool memo_prune_dead(iddfs_ctx& ctx, class_id cid,
 }
 
 // 5) dominance prune
-static bool dominance_prune(iddfs_ctx& ctx,
-                            const descend_plan& p) {
-  if (ctx.memo_table.should_prune_dominance(p.child, p.next_depth_left, ctx.syn_space,
-                                        ctx.sem_space)) {
+static bool dominance_prune(iddfs_ctx& ctx, const descend_plan& p) {
+  if (ctx.memo_table.should_prune_dominance_key(p.iso_key, p.next_depth_left,
+                                                ctx.sem_space)) {
     ctx.prof.prune_dominance.fetch_add(1, std::memory_order_relaxed);
     return true;
   }
@@ -312,18 +341,16 @@ static bool dominance_prune(iddfs_ctx& ctx,
 }
 
 // Main: reads like the algorithm
-static bool try_descend(iddfs_ctx& ctx,
-                        const iddfs_frame& frame,
-                        class_id cid, semantic_state& child_state,
-                        std::uint16_t& next_min_id,
-                        std::uint8_t& next_depth_left) {
+static bool try_descend(iddfs_ctx& ctx, const iddfs_frame& frame, class_id cid,
+                        semantic_state& child_state, std::uint16_t& next_min_id,
+                        std::uint8_t& next_depth_left,
+                        canonical_key& out_iso_key) {
   if (conflict_prune(ctx, cid)) {
     return false;
   }
   descend_plan p = init_descend_plan(frame, cid);
 
-  if (apply_premise_result(ctx, cid, p) !=
-      apply_result::changed) {
+  if (apply_premise_result(ctx, cid, p) != apply_result::changed) {
     return false;
   }
   if (memo_prune_dead(ctx, cid, p)) {
@@ -336,11 +363,9 @@ static bool try_descend(iddfs_ctx& ctx,
   child_state = p.child;
   next_min_id = p.next_min_id;
   next_depth_left = p.next_depth_left;
+  out_iso_key = p.iso_key;
   return true;
 }
-
-
-
 
 static void init_limit(iddfs_ctx& ctx, std::uint8_t limit,
                        const semantic_state& root) {
@@ -379,12 +404,13 @@ struct descend_out {
   semantic_state child;
   std::uint16_t next_min_id = 0;
   std::uint8_t next_depth_left = 0;
+  canonical_key iso_key{};
 };
 
 static bool try_make_child(iddfs_ctx& ctx, const iddfs_frame& parent,
                            class_id cid, descend_out& out) {
-  return try_descend(ctx, parent, cid, out.child,
-                     out.next_min_id, out.next_depth_left);
+  return try_descend(ctx, parent, cid, out.child, out.next_min_id,
+                     out.next_depth_left, out.iso_key);
 }
 
 static std::size_t push_premise(iddfs_ctx& ctx, class_id cid) {
@@ -471,7 +497,8 @@ static void step(iddfs_ctx& ctx, std::uint8_t limit,
   if (pop_if_done(ctx)) return;
 
   iddfs_frame& curr = ctx.frame_stack.back();
-  const class_id cid = next_candidate(ctx, limit);;
+  const class_id cid = next_candidate(ctx, limit);
+  ;
 
   descend_out d{};
   if (!try_make_child(ctx, curr, cid, d)) return;
@@ -484,29 +511,27 @@ static void step(iddfs_ctx& ctx, std::uint8_t limit,
     return;
   }
 
-  if (!should_expand_or_undo(ctx, cid, d.child, d.next_min_id,
-                             d.next_depth_left)) {
-    return;
-  }
+  // if (!should_expand_or_undo(ctx, cid, d.child, d.next_min_id,
+  //                            d.next_depth_left)) {
+  //   return;
+  // }
 
-  if (!premise_seen_or_undo(ctx, cid, d.next_depth_left)) {
-    return;
-  }
+  // if (!premise_seen_or_undo(ctx, cid, d.next_depth_left)) {
+  //   return;
+  // }
   push_child_frame(ctx, d, d.next_min_id, d.next_depth_left, parent_path_size);
-
 }
 
 static bool finish_limit(iddfs_ctx& ctx, std::uint8_t limit,
                          std::size_t max_stack_depth_this_limit,
                          std::uint64_t solutions_before_limit,
                          std::uint8_t start_limit) {
-  ctx.prof.premise_seen_size.store(ctx.premise_seen.size(),
-                                   std::memory_order_relaxed);
-  ctx.prof.premise_seen_buckets.store(ctx.premise_seen.bucket_count(),
-                                      std::memory_order_relaxed);
+  //  ctx.prof.premise_seen_size.store(ctx.premise_seen.size(),
+  //                                    std::memory_order_relaxed);
+  //  ctx.prof.premise_seen_buckets.store(ctx.premise_seen.bucket_count(),
+  //                                       std::memory_order_relaxed);
 
-  ctx.prof.print_snapshot();
-  ctx.output.flush();
+  std::cerr << "Finished Depth: " << std::to_string(limit) << "\n";
 
   const std::uint64_t new_solutions =
       ctx.prof.solutions_emitted.load(std::memory_order_relaxed) -
@@ -551,11 +576,11 @@ void run_iddfs(const semantic_space& sem_space, const syntax_space& syn_space,
   covered = 0;
   plateau = 0;
 
-  ctx.premise_seen =
-      premise_seen_map(1, premise_bitset_key_hash{ctx.class_words},
-                       premise_bitset_key_eq{ctx.class_words});
-  ctx.premise_seen.max_load_factor(0.7f);
-  ctx.premise_seen.rehash(1'000'000);
+  // ctx.premise_seen =
+  //     premise_seen_map(1, premise_bitset_key_hash{ctx.class_words},
+  //                      premise_bitset_key_eq{ctx.class_words});
+  // ctx.premise_seen.max_load_factor(0.7f);
+  // ctx.premise_seen.rehash(1'000'000);
 
   ctx.tmp_ids.reserve(static_cast<std::size_t>(max_depth) + 1);
   ctx.tmp_key.ids.reserve(static_cast<std::size_t>(max_depth) + 1);

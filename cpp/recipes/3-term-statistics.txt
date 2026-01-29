@@ -1,19 +1,19 @@
 [run]
-elapsed 0.006s
 term_count 3
 max_depth 4
-
-[sizes]
-premise_seen_size 48
-premise_seen_buckets 1056323
-
-[flow]
-1. considered 575
-2. descended 54
-3. leaves 304
-4. solutions_emitted 10
-5. solutions_accepted 4
 max_stack_depth_observed 3
+
+[time]
+elapsed 0.000s
+avg nodes/s 0
+
+[flow summary / survival rates per stage]
+stage                  count    %all   %prev
+0. candidates            575   100.0       -
+1. preleaf               358   62.3%   62.3%
+2. leaf_reached          304   52.9%   84.9%
+3. solutions_found        10    1.7%    3.3%
+4. sols recorded           4   0.70%   40.0%
 
 [preleaf_prune | try_descend]
 1. conflict 139
@@ -21,16 +21,13 @@ max_stack_depth_observed 3
 3. inconsistent 4
 4. memo_dead 0
 5. dominance 70
-6. should_expand 0
-7. premise_seen 0
 
 [leaf_prune | handle_leaf]
 1. missing_coverage 6
 2. no_unique_conclusion 288
-3. taste_banned 0
-4. requires_all_failed 278
-5. too_many_conclusions 12
-6. already_present 820
+3. requires_all_failed 278
+4. too_many_conclusions 12
+5. already_present 820
 
 [workload]
 apply_premise_calls 436
