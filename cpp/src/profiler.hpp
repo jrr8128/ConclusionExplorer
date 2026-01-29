@@ -102,6 +102,8 @@ struct profiler {
   mutable double min_rate = 0.0;
   mutable double max_rate = 0.0;
   mutable bool rate_initialized = false;
+  mutable std::uint64_t last_accept_snapshot_ms = 0;
+  mutable std::uint64_t last_accept_count = 0;
 
   // config (optional; set from main)
   std::string output_root = "recipes";  // where stats file is written

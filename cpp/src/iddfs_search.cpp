@@ -149,6 +149,16 @@ void profiler::print_snapshot() const {
   const double nodes_per_sec =
       elapsed_s > 0.0 ? (double(nodes) / elapsed_s) : 0.0;
 
+  if (sol2 != last_accept_count) {
+    last_accept_count = sol2;
+    last_accept_snapshot_ms = elapsed;
+  }
+  const std::uint64_t since_accept_ms =
+      (last_accept_snapshot_ms == 0) ? 0 : (elapsed - last_accept_snapshot_ms);
+  const std::string since_accept = (last_accept_snapshot_ms == 0)
+                                       ? "n/a"
+                                       : format_elapsed_ms(since_accept_ms);
+
   const auto old_flags = std::cout.flags();
   const auto old_prec = std::cout.precision();
   std::cout << std::fixed << std::setprecision(1);
@@ -157,7 +167,7 @@ void profiler::print_snapshot() const {
             << "  stack=" << stack << "  nodes=" << nodes << "  nodes/s="
             << snap_rate
             //<< "  seen=" << ps
-            << "  leaf=" << leaves << "\n"
+            << "  leaf=" << leaves << "  since_accept=" << since_accept << "\n"
             << "leaf:   reached=" << leaves << "  miss_cov=" << leaf_cov
             << "  nonuniq="
             << leaf_uniq
