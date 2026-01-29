@@ -585,6 +585,7 @@ void run_iddfs(const semantic_space& sem_space, const syntax_space& syn_space,
   ctx.tmp_ids.reserve(static_cast<std::size_t>(max_depth) + 1);
   ctx.tmp_key.ids.reserve(static_cast<std::size_t>(max_depth) + 1);
 
+  // term count -1 is min premises to have a connected premise set
   const std::uint8_t start_limit =
       std::max<std::uint8_t>(2, ctx.syn_space.term_count - 1);
 
