@@ -350,7 +350,6 @@ static bool dominance_prune(iddfs_ctx& ctx, const descend_plan& p) {
   return false;
 }
 
-// Main: reads like the algorithm
 static bool try_descend(iddfs_ctx& ctx, const iddfs_frame& frame, class_id cid,
                         semantic_state& child_state, std::uint16_t& next_min_id,
                         std::uint8_t& next_depth_left,

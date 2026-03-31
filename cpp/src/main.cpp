@@ -16,7 +16,46 @@ using namespace ::conclusion_explorer;
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <string_view>
 #include <thread>
+
+struct run_config {
+  std::uint8_t term_count = 3;
+  bool no_conclusion = false;
+};
+
+static run_config parse_args(int argc, char** argv) {
+  run_config cfg{};
+  bool term_set = false;
+
+  for (int index = 1; index < argc; index++) {
+    std::string_view arg = argv[index];
+
+    if (arg == "--noconc" || arg == "--no-conclusion") {
+      cfg.no_conclusion = true;
+      continue;
+    }
+    if (arg == "--unique") {
+      cfg.no_conclusion = false;
+      continue;
+    }
+
+    if (!term_set && !arg.empty() && arg[0] != '-') {
+      const long v = std::strtol(argv[index], nullptr, 10);
+      if (v < 3 || v > 8) {
+        std::cerr << "usage: app.exe [term_count 3..8] [--noconc]\n";
+        std::exit(1);
+      }
+      cfg.term_count = static_cast<std::uint8_t>(v);
+      term_set = true;
+      continue;
+    }
+
+    std::cerr << "usage: app.exe [term_count 3..8] [--noconc]\n";
+    std::exit(1);
+  }
+  return cfg;
+}
 
 static void live_printer(std::stop_token st,
                          const conclusion_explorer::profiler& p) {
@@ -48,14 +87,15 @@ static std::uint8_t parse_term_count(int argc, char** argv) {
   }
   const long v = std::strtol(argv[1], nullptr, 10);
   if (v < 3 || v > 8) {
-    std::cerr << "usage: app.exe [term_count 3..8]\n";
+    std::cerr << "usage: app.exe [term_count 3..8] [--noconc]\n";
     std::exit(1);
   }
   return static_cast<std::uint8_t>(v);
 }
 
 int main(int argc, char** argv) {
-  const std::uint8_t term_count = parse_term_count(argc, argv);
+  const run_config cfg = parse_args(argc, argv);
+  const std::uint8_t term_count = cfg.term_count;
   conclusion_explorer::install_sigint_handler();
   syntax_space syn_space = build_syntax_space(term_count);
   semantic_space sem_space = build_semantic_space(syn_space);
